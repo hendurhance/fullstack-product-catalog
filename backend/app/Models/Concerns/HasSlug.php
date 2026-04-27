@@ -19,18 +19,27 @@ trait HasSlug
     protected static function bootHasSlug(): void
     {
         static::creating(function (Model $model): void {
-            if (! empty($model->slug)) {
-                return;
-            }
-
             $source = $model->getSlugSource();
             if ($source === null || empty($model->{$source})) {
                 return;
             }
 
-            $base = Str::slug((string) $model->{$source});
-            $model->slug = $base.'-'.Str::lower(Str::random(self::SLUG_SUFFIX_LENGTH));
+            $model->slug = self::buildSlug((string) $model->{$source});
         });
+
+        static::updating(function (Model $model): void {
+            $source = $model->getSlugSource();
+            if ($source === null || ! $model->isDirty($source)) {
+                return;
+            }
+
+            $model->slug = self::buildSlug((string) $model->{$source});
+        });
+    }
+
+    private static function buildSlug(string $value): string
+    {
+        return Str::slug($value).'-'.Str::lower(Str::random(self::SLUG_SUFFIX_LENGTH));
     }
 
     public function getRouteKeyName(): string
