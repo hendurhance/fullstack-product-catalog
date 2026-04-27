@@ -1,7 +1,8 @@
 <?php
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\Api\V1\CategoryController;
 use Illuminate\Support\Facades\Route;
+
 
 Route::prefix('v1')->group(function () {
     Route::get('/health', function () {
@@ -11,4 +12,6 @@ Route::prefix('v1')->group(function () {
             'time' => now()->toIso8601String(),
         ]);
     });
+
+    Route::apiResource('categories', CategoryController::class);
 });
