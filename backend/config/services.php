@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'revalidation' => [
+        'secret' => env('REVALIDATION_SECRET', ''),
+        'url' => env('REVALIDATION_URL', ''),
+    ],
+
 ];

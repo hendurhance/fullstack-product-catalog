@@ -8,13 +8,17 @@ use Dedoc\Scramble\Support\Generator\SecurityRequirement;
 use Dedoc\Scramble\Support\Generator\SecurityScheme;
 use Dedoc\Scramble\Support\Generator\Operation;
 use Dedoc\Scramble\Support\RouteInfo;
+use App\Support\Cache\RevalidationService;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //
+        $this->app->singleton(RevalidationService::class, fn ($app) => new RevalidationService(
+            $app->make('config')->get('services.revalidation.secret', ''),
+            $app->make('config')->get('services.revalidation.url', ''),
+        ));
     }
 
     public function boot(): void

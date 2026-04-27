@@ -1,26 +1,139 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/*
+ * Acme/Untitled-inspired palette. Warm near-white paper, deep ink, a
+ * tight ladder of hairline grays for borders + dividers. Emphasis
+ * comes from typography and spacing, not hue. Destructive red is the
+ * only chromatic note, used sparingly.
+ *
+ * Values in OKLCH so dark mode stays perceptually balanced.
+ */
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+  --color-rule: var(--rule);
+  --color-rule-strong: var(--rule-strong);
+  --color-danger: var(--danger);
+  --color-danger-bg: var(--danger-bg);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+:root {
+  --paper: oklch(0.985 0.002 95);
+  --paper-2: oklch(1 0 0);
+  --ink: oklch(0.18 0.005 270);
+  --ink-muted: oklch(0.45 0.005 270);
+  --ink-faint: oklch(0.62 0.005 270);
+  --rule: oklch(0.92 0.003 270);
+  --rule-strong: oklch(0.85 0.004 270);
+  --danger: oklch(0.55 0.20 25);
+  --danger-bg: oklch(0.96 0.03 25);
+}
+
+.dark {
+  --paper: oklch(0.16 0.004 270);
+  --paper-2: oklch(0.20 0.005 270);
+  --ink: oklch(0.97 0.003 95);
+  --ink-muted: oklch(0.70 0.005 270);
+  --ink-faint: oklch(0.50 0.005 270);
+  --rule: oklch(0.28 0.005 270);
+  --rule-strong: oklch(0.36 0.005 270);
+  --danger: oklch(0.66 0.18 25);
+  --danger-bg: oklch(0.25 0.06 25);
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    border-color: var(--rule);
+  }
+
+  html {
+    font-family: var(--font-geist-sans, ui-sans-serif, system-ui);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: "ss01", "cv11";
+  }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+  }
+
+  ::selection {
+    background: var(--ink);
+    color: var(--paper);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/*
+ * Subtle paper grain — a fixed dotted background so it doesn't tile
+ * weirdly on long pages. Cheap atmosphere, no images.
+ */
+.acme-grain {
+  position: relative;
+  isolation: isolate;
 }
+.acme-grain::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    color-mix(in oklch, var(--ink) 4%, transparent) 1px,
+    transparent 0
+  );
+  background-size: 4px 4px;
+  opacity: 0.5;
+}
+
+/*
+ * Type utilities used across pages — declared once so kerning + leading
+ * stay consistent without copying tracking values into every component.
+ */
+.acme-display {
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+}
+.acme-eyebrow {
+  font-family: var(--font-geist-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ink-muted);
+}
+.acme-mono {
+  font-family: var(--font-geist-mono);
+  font-feature-settings: "zero", "ss02";
+}
+
+/*
+ * Tiny dialog motion — keep restrained. 120ms easing matches Sonner's
+ * default so toasts and dialogs feel like the same system.
+ */
+@keyframes acme-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes acme-pop-in {
+  from { opacity: 0; transform: translateY(4px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.acme-fade { animation: acme-fade-in 120ms ease-out; }
+.acme-pop { animation: acme-pop-in 140ms cubic-bezier(0.2, 0.9, 0.4, 1); }

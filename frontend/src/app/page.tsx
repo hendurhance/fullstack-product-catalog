@@ -1,65 +1,47 @@
-import Image from "next/image";
+import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <main className="acme-grain mx-auto flex w-full max-w-3xl flex-1 flex-col px-6 py-20">
+      <header className="mb-16 flex items-baseline justify-between">
+        <p className="acme-eyebrow">Acme · Catalog</p>
+        <p className="acme-mono text-[11px] text-(--ink-faint)">v1.0</p>
+      </header>
+
+      <section className="grid gap-8">
+        <h1 className="acme-display text-[72px] leading-[0.95] tracking-[-0.03em] text-(--ink)">
+          A small catalog,
+          <br />
+          carefully wired.
+        </h1>
+
+        <p className="max-w-prose text-[16px] leading-relaxed text-(--ink-muted)">
+          A reference implementation of a product catalog where the contract
+          is the source of truth. Laravel emits OpenAPI; Next consumes the
+          types; Drizzle reconciles them at compile time. No drift survives
+          a build.
+        </p>
+
+        <div className="mt-2 flex flex-wrap items-center gap-3">
+          <Link
+            href="/categories"
+            className="inline-flex h-10 items-center rounded-[8px] bg-(--ink) px-4 text-sm font-medium text-(--paper) transition-colors hover:bg-(--ink-muted)"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            Browse categories
+          </Link>
+          <Link
+            href="/admin"
+            className="inline-flex h-10 items-center rounded-[8px] border border-(--rule-strong) bg-(--paper-2) px-4 text-sm font-medium text-(--ink) transition-colors hover:border-(--ink-muted)"
           >
-            Documentation
-          </a>
+            Admin →
+          </Link>
         </div>
-      </main>
-    </div>
+      </section>
+
+      <footer className="mt-auto flex items-baseline justify-between border-t border-(--rule) pt-8 text-xs text-(--ink-faint)">
+        <span className="acme-mono">Laravel 13 · Next 16 · Postgres · Redis</span>
+        <span>Take-home assessment</span>
+      </footer>
+    </main>
   );
 }

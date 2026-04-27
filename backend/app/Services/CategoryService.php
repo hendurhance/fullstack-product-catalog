@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Models\Category;
 use App\Repositories\CategoryRepository;
 use App\Support\Cache\CacheWrapper;
+use App\Support\Cache\RevalidationService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -22,6 +23,7 @@ final class CategoryService
     public function __construct(
         private readonly CategoryRepository $repository,
         private readonly CacheWrapper $cache,
+        private readonly RevalidationService $revalidation,
     ) {}
 
     /**
@@ -95,6 +97,7 @@ final class CategoryService
         }
 
         $this->cache->flush($tags);
+        $this->revalidation->invalidate($tags);
     }
 
     private static function slugTag(string $slug): string
