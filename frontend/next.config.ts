@@ -16,7 +16,7 @@ const nextConfig: NextConfig = {
    * staleness windows.
    */
   cacheLife: {
-    categoriesList: {
+    categoryList: {
       stale: 60,
       revalidate: 60,
       expire: 180,
@@ -24,6 +24,16 @@ const nextConfig: NextConfig = {
     categoryDetail: {
       stale: 300,
       revalidate: 300,
+      expire: 600,
+    },
+    productList: {
+      stale: 60,
+      revalidate: 60,
+      expire: 300,
+    },
+    productDetail: {
+      stale: 120,
+      revalidate: 120,
       expire: 600,
     },
   },

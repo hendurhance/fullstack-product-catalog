@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Models\Category;
 use App\Repositories\CategoryRepository;
+use App\Support\Cache\CachePolicy;
 use App\Support\Cache\CacheWrapper;
 use App\Support\Cache\RevalidationService;
 use Illuminate\Database\Eloquent\Collection;
@@ -13,12 +14,7 @@ use Illuminate\Support\Facades\DB;
 
 final class CategoryService
 {
-    /** Brief requires per-route TTLs documented in README — see PLAN D3. */
-    private const int TTL_LIST = 600;
-
-    private const int TTL_DETAIL = 600;
-
-    private const string TAG_DOMAIN = 'categories';
+    private const string DOMAIN = 'categories';
 
     public function __construct(
         private readonly CategoryRepository $repository,
@@ -32,9 +28,9 @@ final class CategoryService
     public function list(): Collection
     {
         $rows = $this->cache->remember(
-            [self::TAG_DOMAIN],
+            [CachePolicy::tag(self::DOMAIN, 'list')],
             'categories:list',
-            self::TTL_LIST,
+            CachePolicy::ttl(self::DOMAIN, 'list'),
             fn () => $this->repository->all()->toArray(),
         );
 
@@ -44,9 +40,9 @@ final class CategoryService
     public function findBySlug(string $slug): ?Category
     {
         $row = $this->cache->remember(
-            [self::TAG_DOMAIN, self::slugTag($slug)],
+            [CachePolicy::tag(self::DOMAIN, 'list'), $this->slugTag($slug)],
             "categories:slug:{$slug}",
-            self::TTL_DETAIL,
+            CachePolicy::ttl(self::DOMAIN, 'detail'),
             fn () => $this->repository->findBySlug($slug)?->toArray(),
         );
 
@@ -91,17 +87,18 @@ final class CategoryService
 
     private function invalidate(string $slug, ?string $previousSlug = null): void
     {
-        $tags = [self::TAG_DOMAIN, self::slugTag($slug)];
+        $tags = [CachePolicy::tag(self::DOMAIN, 'list'), $this->slugTag($slug)];
+
         if ($previousSlug !== null && $previousSlug !== $slug) {
-            $tags[] = self::slugTag($previousSlug);
+            $tags[] = $this->slugTag($previousSlug);
         }
 
         $this->cache->flush($tags);
         $this->revalidation->invalidate($tags);
     }
 
-    private static function slugTag(string $slug): string
+    private function slugTag(string $slug): string
     {
-        return "category:slug:{$slug}";
+        return CachePolicy::resolveTag(self::DOMAIN, 'detail', ['slug' => $slug]);
     }
 }

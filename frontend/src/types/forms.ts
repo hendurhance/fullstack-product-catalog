@@ -1,16 +1,13 @@
 import { z } from "zod";
 
 /*
- * Form schemas live next to the rest of the shared types. The OpenAPI-
- * derived `StoreCategoryInput` / `UpdateCategoryInput` are loose shapes
- * for the wire (e.g. `slug` is optional everywhere because the server
- * auto-generates it). These zod schemas mirror the *server validation
- * messages* so the client error UX matches what the server would say
- * if a malformed request slipped through.
+ * Form schemas mirror the *server validation messages* so the client
+ * error UX matches what the server would say if a malformed request
+ * slipped through.
  *
- * Keep these aligned with backend/app/Http/Requests/*Category*.php.
+ * Keep these aligned with backend/app/Http/Requests/*.php.
+ * Slug is auto-generated from name on the backend — not part of any form.
  */
-export const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 export const loginFormSchema = z.object({
   email: z
@@ -29,15 +26,6 @@ export const categoryFormSchema = z.object({
     .string()
     .min(2, "The category name must be at least 2 characters.")
     .max(120, "The category name may not exceed 120 characters."),
-  slug: z
-    .string()
-    .max(160, "The slug may not exceed 160 characters.")
-    .regex(
-      SLUG_REGEX,
-      'The slug may only contain lowercase letters, numbers, and single hyphens between segments (e.g. "home-and-kitchen").',
-    )
-    .optional()
-    .or(z.literal("")),
   description: z
     .string()
     .max(1000, "The description may not exceed 1000 characters.")
@@ -46,3 +34,26 @@ export const categoryFormSchema = z.object({
 });
 
 export type CategoryFormValues = z.infer<typeof categoryFormSchema>;
+
+export const productFormSchema = z.object({
+  category_id: z.string().uuid("Please select a valid category."),
+  name: z
+    .string()
+    .min(2, "The product name must be at least 2 characters.")
+    .max(255, "The product name may not exceed 255 characters."),
+  description: z
+    .string()
+    .max(2000, "The description may not exceed 2000 characters.")
+    .optional()
+    .or(z.literal("")),
+  price: z
+    .number({ error: "The price must be a whole number." })
+    .min(0, "The price cannot be negative."),
+  stock_qty: z
+    .number({ error: "The stock quantity must be a whole number." })
+    .int("The stock quantity must be a whole number.")
+    .min(0, "The stock quantity cannot be negative."),
+  is_published: z.boolean().optional(),
+});
+
+export type ProductFormValues = z.infer<typeof productFormSchema>;

@@ -9,44 +9,40 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button, Eyebrow, Hairline } from "@/components/primitives";
-import type { Category } from "@/types";
+import { formatPrice } from "@/lib/money";
+import type { Category, Product } from "@/types";
 
 import {
   type ActionError,
-  createCategoryAction,
-  deleteCategoryAction,
-  listCategoriesAction,
-  updateCategoryAction,
+  createProductAction,
+  deleteProductAction,
+  listProductsAction,
+  togglePublishedAction,
+  updateProductAction,
 } from "../actions";
-import { CategoryDialog } from "./category-dialog";
-import { ConfirmDialog } from "./confirm-dialog";
+import { ProductDialog } from "./product-dialog";
+import { ConfirmDialog } from "../../categories/_components/confirm-dialog";
 
-const QUERY_KEY = ["admin", "categories"] as const;
+const QUERY_KEY = ["admin", "products"] as const;
 
-/*
- * Client-side admin table. TanStack Query owns the cache; the page
- * pre-hydrates the query with `initialData` from a server action so
- * the first paint is data-complete and subsequent operations feel
- * instant. Each mutation does optimistic-write → on-error rollback →
- * on-settled refetch. Server actions revalidate the public Next
- * cache tags, so the public site reflects changes within one render.
- */
-export function CategoriesTable({
+export function ProductsTable({
   initial,
   initialError,
+  categories,
 }: {
-  initial: Category[];
+  initial: Product[];
   initialError: string | null;
+  categories: Category[];
 }) {
   const qc = useQueryClient();
-  const [editing, setEditing] = useState<Category | null>(null);
+  const [editing, setEditing] = useState<Product | null>(null);
   const [creating, setCreating] = useState(false);
-  const [pendingDelete, setPendingDelete] = useState<Category | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<Product | null>(null);
 
   const query = useQuery({
     queryKey: QUERY_KEY,
     queryFn: async () => {
-      const result = await listCategoriesAction();
+      const result = await listProductsAction();
       if (!result.ok) throw new Error(result.error.message);
       return result.data;
     },
@@ -56,19 +52,22 @@ export function CategoriesTable({
 
   const createMutation = useMutation({
     mutationFn: async (input: {
+      category_id: string;
       name: string;
-      slug?: string;
       description?: string | null;
+      price: number;
+      stock_qty: number;
+      is_published?: boolean;
     }) => {
-      const result = await createCategoryAction(input);
+      const result = await createProductAction(input);
       if (!result.ok) throw result.error;
       return result.data;
     },
     onSuccess: (created) => {
-      qc.setQueryData<Category[]>(QUERY_KEY, (prev) =>
+      qc.setQueryData<Product[]>(QUERY_KEY, (prev) =>
         prev ? [...prev, created] : [created],
       );
-      toast.success(`Created “${created.name}”.`);
+      toast.success(`Created "${created.name}".`);
       setCreating(false);
     },
     onError: (error) => {
@@ -79,18 +78,25 @@ export function CategoriesTable({
   const updateMutation = useMutation({
     mutationFn: async (vars: {
       slug: string;
-      input: { name?: string; slug?: string; description?: string | null };
+      input: {
+        category_id?: string;
+        name?: string;
+        description?: string | null;
+        price?: number;
+        stock_qty?: number;
+        is_published?: boolean;
+      };
     }) => {
-      const result = await updateCategoryAction(vars.slug, vars.input);
+      const result = await updateProductAction(vars.slug, vars.input);
       if (!result.ok) throw result.error;
       return result.data;
     },
     onMutate: async (vars) => {
       await qc.cancelQueries({ queryKey: QUERY_KEY });
-      const previous = qc.getQueryData<Category[]>(QUERY_KEY);
-      qc.setQueryData<Category[]>(QUERY_KEY, (prev) =>
-        prev?.map((c) =>
-          c.slug === vars.slug ? { ...c, ...vars.input } : c,
+      const previous = qc.getQueryData<Product[]>(QUERY_KEY);
+      qc.setQueryData<Product[]>(QUERY_KEY, (prev) =>
+        prev?.map((p) =>
+          p.slug === vars.slug ? { ...p, ...vars.input } : p,
         ) ?? [],
       );
       return { previous };
@@ -100,7 +106,7 @@ export function CategoriesTable({
       toast.error(messageOf(error));
     },
     onSuccess: (updated) => {
-      toast.success(`Updated “${updated.name}”.`);
+      toast.success(`Updated "${updated.name}".`);
       setEditing(null);
     },
     onSettled: () => qc.invalidateQueries({ queryKey: QUERY_KEY }),
@@ -108,15 +114,15 @@ export function CategoriesTable({
 
   const deleteMutation = useMutation({
     mutationFn: async (slug: string) => {
-      const result = await deleteCategoryAction(slug);
+      const result = await deleteProductAction(slug);
       if (!result.ok) throw result.error;
       return result.data;
     },
     onMutate: async (slug) => {
       await qc.cancelQueries({ queryKey: QUERY_KEY });
-      const previous = qc.getQueryData<Category[]>(QUERY_KEY);
-      qc.setQueryData<Category[]>(QUERY_KEY, (prev) =>
-        prev?.filter((c) => c.slug !== slug) ?? [],
+      const previous = qc.getQueryData<Product[]>(QUERY_KEY);
+      qc.setQueryData<Product[]>(QUERY_KEY, (prev) =>
+        prev?.filter((p) => p.slug !== slug) ?? [],
       );
       return { previous };
     },
@@ -125,13 +131,40 @@ export function CategoriesTable({
       toast.error(messageOf(error));
     },
     onSuccess: ({ slug }) => {
-      toast.success(`Deleted “${slug}”.`);
+      toast.success(`Deleted "${slug}".`);
       setPendingDelete(null);
     },
     onSettled: () => qc.invalidateQueries({ queryKey: QUERY_KEY }),
   });
 
-  const categories = query.data ?? [];
+  const toggleMutation = useMutation({
+    mutationFn: async ({ slug, is_published }: { slug: string; is_published: boolean }) => {
+      const result = await togglePublishedAction(slug, is_published);
+      if (!result.ok) throw result.error;
+      return result.data;
+    },
+    onMutate: async ({ slug, is_published }) => {
+      await qc.cancelQueries({ queryKey: QUERY_KEY });
+      const previous = qc.getQueryData<Product[]>(QUERY_KEY);
+      qc.setQueryData<Product[]>(QUERY_KEY, (prev) =>
+        prev?.map((p) =>
+          p.slug === slug ? { ...p, is_published } : p,
+        ) ?? [],
+      );
+      return { previous };
+    },
+    onError: (error, _vars, ctx) => {
+      if (ctx?.previous) qc.setQueryData(QUERY_KEY, ctx.previous);
+      toast.error(messageOf(error));
+    },
+    onSuccess: (updated) => {
+      toast.success(updated.is_published ? "Published." : "Unpublished.");
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: QUERY_KEY }),
+  });
+
+  const products = query.data ?? [];
+  const categoryMap = new Map(categories.map((c) => [c.id, c.name]));
 
   return (
     <div className="rounded-[12px] border border-(--rule) bg-(--paper-2)">
@@ -139,8 +172,8 @@ export function CategoriesTable({
         <div className="flex items-baseline gap-3">
           <Eyebrow>Catalog</Eyebrow>
           <span className="text-sm text-(--ink-muted)">
-            <span className="acme-mono text-(--ink)">{categories.length}</span>{" "}
-            {categories.length === 1 ? "record" : "records"}
+            <span className="acme-mono text-(--ink)">{products.length}</span>{" "}
+            {products.length === 1 ? "record" : "records"}
             {query.isFetching ? (
               <span className="acme-mono ml-2 text-[11px] text-(--ink-faint)">
                 · syncing
@@ -150,7 +183,7 @@ export function CategoriesTable({
         </div>
         <Button size="sm" onClick={() => setCreating(true)}>
           <span aria-hidden>+</span>
-          New category
+          New product
         </Button>
       </div>
 
@@ -167,20 +200,22 @@ export function CategoriesTable({
           <thead>
             <tr className="acme-eyebrow border-b border-(--rule) bg-(--paper)">
               <Th>Name</Th>
-              <Th>Slug</Th>
-              <Th>Description</Th>
+              <Th>Category</Th>
+              <Th align="right">Price</Th>
+              <Th align="right">Stock</Th>
+              <Th>Status</Th>
               <Th align="right">Actions</Th>
             </tr>
           </thead>
           <tbody>
-            {categories.length === 0 ? (
+            {products.length === 0 ? (
               <tr>
                 <td
-                  colSpan={4}
+                  colSpan={6}
                   className="px-5 py-12 text-center text-sm text-(--ink-muted)"
                 >
                   <p className="acme-display text-base text-(--ink)">
-                    No categories yet
+                    No products yet
                   </p>
                   <p className="mt-1 text-xs">
                     Create the first one to populate the public catalog.
@@ -188,37 +223,64 @@ export function CategoriesTable({
                 </td>
               </tr>
             ) : (
-              categories.map((c) => (
+              products.map((p) => (
                 <tr
-                  key={c.id}
+                  key={p.id}
                   className="border-b border-(--rule) last:border-b-0 transition-colors hover:bg-(--paper)"
                 >
                   <td className="sticky left-0 z-10 bg-(--paper-2) px-5 py-3 font-medium text-(--ink) after:absolute after:right-0 after:top-0 after:h-full after:w-4 after:bg-gradient-to-r after:from-(--paper-2)/80 after:to-transparent group-hover:after:from-(--paper)/80">
-                    {c.name}
-                  </td>
-                  <td className="acme-mono px-5 py-3 text-xs text-(--ink-muted)">
-                    {c.slug}
+                    {p.name}
                   </td>
                   <td className="px-5 py-3 text-(--ink-muted)">
-                    <span className="line-clamp-1 max-w-[42ch]">
-                      {c.description ?? (
-                        <span className="text-(--ink-faint)">—</span>
-                      )}
-                    </span>
+                    {categoryMap.get(p.category_id) ?? (
+                      <span className="text-(--ink-faint)">—</span>
+                    )}
+                  </td>
+                  <td className="acme-mono px-5 py-3 text-xs text-(--ink) text-right">
+                    {formatPrice(p.price)}
+                  </td>
+                  <td className="acme-mono px-5 py-3 text-xs text-(--ink-muted) text-right">
+                    {p.stock_qty}
+                  </td>
+                  <td className="px-5 py-3">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        toggleMutation.mutate({
+                          slug: p.slug,
+                          is_published: !p.is_published,
+                        })
+                      }
+                      disabled={toggleMutation.isPending}
+                      className={`inline-flex cursor-pointer items-center gap-1.5 rounded-[4px] px-1.5 py-0.5 text-[11px] font-medium transition-colors ${
+                        p.is_published
+                          ? "bg-(--ink)/8 text-(--ink) hover:bg-(--ink)/15"
+                          : "bg-(--rule) text-(--ink-faint) hover:bg-(--rule-strong)"
+                      }`}
+                    >
+                      <span
+                        className={`inline-block size-1.5 rounded-full ${
+                          p.is_published
+                            ? "bg-(--ink)"
+                            : "bg-(--ink-faint)"
+                        }`}
+                      />
+                      {p.is_published ? "Live" : "Draft"}
+                    </button>
                   </td>
                   <td className="px-5 py-3">
                     <div className="flex justify-end gap-2">
                       <Button
                         size="sm"
                         variant="ghost"
-                        onClick={() => setEditing(c)}
+                        onClick={() => setEditing(p)}
                       >
                         Edit
                       </Button>
                       <Button
                         size="sm"
                         variant="danger"
-                        onClick={() => setPendingDelete(c)}
+                        onClick={() => setPendingDelete(p)}
                         disabled={deleteMutation.isPending}
                       >
                         Delete
@@ -233,8 +295,9 @@ export function CategoriesTable({
       </div>
 
       {creating ? (
-        <CategoryDialog
+        <ProductDialog
           mode="create"
+          categories={categories}
           onClose={() => setCreating(false)}
           onSubmit={(values) => createMutation.mutate(values)}
           isSubmitting={createMutation.isPending}
@@ -243,9 +306,10 @@ export function CategoriesTable({
       ) : null}
 
       {editing ? (
-        <CategoryDialog
+        <ProductDialog
           mode="edit"
           initial={editing}
+          categories={categories}
           onClose={() => setEditing(null)}
           onSubmit={(values) =>
             updateMutation.mutate({ slug: editing.slug, input: values })
@@ -257,7 +321,7 @@ export function CategoriesTable({
 
       {pendingDelete ? (
         <ConfirmDialog
-          title="Delete category"
+          title="Delete product"
           description={
             <>
               This permanently removes{" "}

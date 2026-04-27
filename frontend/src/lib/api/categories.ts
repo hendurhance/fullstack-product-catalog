@@ -16,7 +16,7 @@ import { apiFetch, type RequestOptions } from "./client";
 
 export const CATEGORY_TAGS = {
   list: "categories",
-  detail: (slug: string) => `category:${slug}`,
+  detail: (slug: string) => `category:slug:${slug}`,
 } as const;
 
 type AuthOpts = Pick<RequestOptions, "token">;

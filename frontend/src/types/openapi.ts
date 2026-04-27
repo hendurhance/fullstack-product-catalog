@@ -123,6 +123,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Display a listing of the resource */
+        get: operations["products.index"];
+        put?: never;
+        /** Store a newly created resource in storage */
+        post: operations["products.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/products/{product}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Display the specified resource */
+        get: operations["products.show"];
+        /** Update the specified resource in storage */
+        put: operations["products.update"];
+        post?: never;
+        /** Remove the specified resource from storage */
+        delete: operations["products.destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -142,17 +179,49 @@ export interface components {
             email: string;
             password: string;
         };
+        /** ProductResource */
+        ProductResource: {
+            id: string;
+            category_id: string;
+            name: string;
+            slug: string;
+            description: string | null;
+            price: number;
+            price_display: string;
+            stock_qty: number;
+            is_published: boolean;
+            created_at: string;
+            updated_at: string;
+        };
         /** StoreCategoryRequest */
         StoreCategoryRequest: {
             name: string;
-            slug?: string | null;
             description?: string | null;
+        };
+        /** StoreProductRequest */
+        StoreProductRequest: {
+            /** Format: uuid */
+            category_id: string;
+            name: string;
+            description?: string | null;
+            price: number;
+            stock_qty: number;
+            is_published?: boolean;
         };
         /** UpdateCategoryRequest */
         UpdateCategoryRequest: {
             name?: string;
-            slug?: string;
             description?: string | null;
+        };
+        /** UpdateProductRequest */
+        UpdateProductRequest: {
+            /** Format: uuid */
+            category_id?: string;
+            name?: string;
+            description?: string | null;
+            price?: number;
+            stock_qty?: number;
+            is_published?: boolean;
         };
     };
     responses: {
@@ -408,6 +477,142 @@ export interface operations {
             path: {
                 /** @description The category slug */
                 category: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "products.index": {
+        parameters: {
+            query?: {
+                per_page?: number;
+                cursor?: string;
+                category_id?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Array of `ProductResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ProductResource"][];
+                    };
+                };
+            };
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "products.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreProductRequest"];
+            };
+        };
+        responses: {
+            /** @description `ProductResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ProductResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "products.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The product slug */
+                product: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "products.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The product slug */
+                product: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["UpdateProductRequest"];
+            };
+        };
+        responses: {
+            /** @description `ProductResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ProductResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "products.destroy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The product slug */
+                product: string;
             };
             cookie?: never;
         };

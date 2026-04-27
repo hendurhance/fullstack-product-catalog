@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Category;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-final class StoreCategoryRequest extends FormRequest
+final class UpdateCategoryRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -19,8 +19,8 @@ final class StoreCategoryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'min:2', 'max:120'],
-            'description' => ['nullable', 'string', 'max:1000'],
+            'name' => ['sometimes', 'required', 'string', 'min:2', 'max:120'],
+            'description' => ['sometimes', 'nullable', 'string', 'max:1000'],
         ];
     }
 
@@ -30,7 +30,7 @@ final class StoreCategoryRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'A category name is required.',
+            'name.required' => 'A category name is required when updating the name.',
             'name.min' => 'The category name must be at least :min characters.',
             'name.max' => 'The category name may not exceed :max characters.',
             'description.max' => 'The description may not exceed :max characters.',

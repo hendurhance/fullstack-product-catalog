@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreCategoryRequest;
-use App\Http\Requests\UpdateCategoryRequest;
+use App\Http\Requests\Category\StoreCategoryRequest;
+use App\Http\Requests\Category\UpdateCategoryRequest;
 use App\Http\Resources\CategoryResource;
 use App\Models\Category;
 use App\Services\CategoryService;
+use App\Support\Cache\CachePolicy;
 use App\Support\Http\CacheableResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -19,11 +20,8 @@ use Symfony\Component\HttpFoundation\Response as ResponseAlias;
 
 final class CategoryController extends Controller implements HasMiddleware
 {
-    /*
-     * Auth + ability gating lives next to the controller actions they guard.
-     * `auth:sanctum` runs before `abilities:*`, and both are scoped to the
-     * mutating methods so public reads stay anonymous.
-     */
+    private const string DOMAIN = 'categories';
+
     public static function middleware(): array
     {
         return [
@@ -44,7 +42,7 @@ final class CategoryController extends Controller implements HasMiddleware
         return CacheableResponse::apply(
             CategoryResource::collection($categories)->toResponse($request),
             $request,
-            profile: 'list',
+            header: CachePolicy::header(self::DOMAIN, 'list'),
             etagKey: sprintf(
                 'categories:list:%d:%d',
                 $latest?->getTimestamp() ?? 0,
@@ -58,7 +56,7 @@ final class CategoryController extends Controller implements HasMiddleware
         return CacheableResponse::apply(
             (new CategoryResource($category))->toResponse($request),
             $request,
-            profile: 'detail',
+            header: CachePolicy::header(self::DOMAIN, 'detail'),
             etagKey: sprintf(
                 'categories:detail:%s:%d',
                 $category->slug,

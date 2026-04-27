@@ -1,5 +1,5 @@
 import type { components } from "./openapi";
-import type { CategoryRow } from "./schema";
+import type { CategoryRow, ProductRow } from "./schema";
 
 /**
  * Public, app-facing aliases. Components import from here, never from
@@ -9,6 +9,10 @@ import type { CategoryRow } from "./schema";
 export type Category = components["schemas"]["CategoryResource"];
 export type StoreCategoryInput = components["schemas"]["StoreCategoryRequest"];
 export type UpdateCategoryInput = components["schemas"]["UpdateCategoryRequest"];
+
+export type Product = components["schemas"]["ProductResource"];
+export type StoreProductInput = components["schemas"]["StoreProductRequest"];
+export type UpdateProductInput = components["schemas"]["UpdateProductRequest"];
 
 /**
  * Drift guard: the OpenAPI-derived shape and the Drizzle-inferred row
@@ -33,9 +37,27 @@ type CategoryRowContract = {
   description: CategoryRow["description"];
 };
 
+type ProductContract = {
+  id: Product["id"];
+  name: Product["name"];
+  slug: Product["slug"];
+  description: Product["description"];
+};
+
+type ProductRowContract = {
+  id: ProductRow["id"];
+  name: ProductRow["name"];
+  slug: ProductRow["slug"];
+  description: ProductRow["description"];
+};
+
 // Compile-time reconciliation. If the row drifts, both sides fail to
 // satisfy the contract and the build breaks before reaching CI.
 const _categoryContract = {} as CategoryContract satisfies CategoryRowContract;
 const _categoryRowContract = {} as CategoryRowContract satisfies CategoryContract;
+const _productContract = {} as ProductContract satisfies ProductRowContract;
+const _productRowContract = {} as ProductRowContract satisfies ProductContract;
 void _categoryContract;
 void _categoryRowContract;
+void _productContract;
+void _productRowContract;

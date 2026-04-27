@@ -1,4 +1,5 @@
-import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { boolean, integer, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { foreignKey } from "drizzle-orm/pg-core";
 
 /**
  * Drizzle row schemas — kept in this repo per the brief, even though
@@ -22,3 +23,21 @@ export const categories = pgTable("categories", {
 });
 
 export type CategoryRow = typeof categories.$inferSelect;
+
+export const products = pgTable("products", {
+  id: uuid("id").primaryKey(),
+  categoryId: uuid("category_id")
+    .notNull()
+    .references(() => categories.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  slug: text("slug").notNull(),
+  description: text("description"),
+  price: integer("price").notNull(),
+  stockQty: integer("stock_qty").notNull().default(0),
+  isPublished: boolean("is_published").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
+});
+
+export type ProductRow = typeof products.$inferSelect;
