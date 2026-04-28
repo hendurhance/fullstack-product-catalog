@@ -52,5 +52,19 @@ return [
                 'detail' => env('CACHE_POLICY_PRODUCT_DETAIL', 'public, max-age=120, stale-while-revalidate=600'),
             ],
         ],
+        'reviews' => [
+            'tags' => [
+                'list' => 'reviews',
+                'product' => 'reviews:product:{id}',
+            ],
+            'ttl' => [
+                'list' => (int) env('CACHE_TTL_REVIEW_LIST', 60),
+                'product' => (int) env('CACHE_TTL_REVIEW_PRODUCT', 60),
+            ],
+            'headers' => [
+                'list' => env('CACHE_POLICY_REVIEW_LIST', 'public, max-age=60, stale-while-revalidate=120'),
+                'product' => env('CACHE_POLICY_REVIEW_PRODUCT', 'public, max-age=60, stale-while-revalidate=120'),
+            ],
+        ],
     ],
 ];

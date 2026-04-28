@@ -117,7 +117,7 @@ export default function Home() {
       </section>
 
       <footer className="mt-auto flex items-baseline justify-between border-t border-(--rule) pt-8 text-xs text-(--ink-faint)">
-        <span className="acme-mono">Laravel 13 · Next 16 · Postgres · Redis</span>
+        <span className="acme-mono">Laravel 13 · Next 16 · MySQL · Redis</span>
         <span>Take-home assessment</span>
       </footer>
     </main>

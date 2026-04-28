@@ -1,5 +1,5 @@
 import type { components } from "./openapi";
-import type { CategoryRow, ProductRow } from "./schema";
+import type { CategoryRow, ProductRow, ReviewRow } from "./schema";
 
 /**
  * Public, app-facing aliases. Components import from here, never from
@@ -13,6 +13,10 @@ export type UpdateCategoryInput = components["schemas"]["UpdateCategoryRequest"]
 export type Product = components["schemas"]["ProductResource"];
 export type StoreProductInput = components["schemas"]["StoreProductRequest"];
 export type UpdateProductInput = components["schemas"]["UpdateProductRequest"];
+
+export type Review = components["schemas"]["ReviewResource"];
+export type StoreReviewInput = components["schemas"]["StoreReviewRequest"];
+export type UpdateReviewInput = components["schemas"]["UpdateReviewRequest"];
 
 /**
  * Drift guard: the OpenAPI-derived shape and the Drizzle-inferred row

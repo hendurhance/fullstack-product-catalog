@@ -160,6 +160,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["reviews.index"];
+        put?: never;
+        post: operations["reviews.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/reviews/{review}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["reviews.show"];
+        put: operations["reviews.update"];
+        post?: never;
+        delete: operations["reviews.destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/reviews/{review}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["review.approve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/reviews/{review}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["review.reject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -193,6 +257,18 @@ export interface components {
             created_at: string;
             updated_at: string;
         };
+        /** ReviewResource */
+        ReviewResource: {
+            id: string;
+            product_id: string;
+            reviewer_name: string;
+            email: string;
+            rating: number;
+            body: string;
+            is_approved: boolean;
+            created_at: string;
+            updated_at: string;
+        };
         /** StoreCategoryRequest */
         StoreCategoryRequest: {
             name: string;
@@ -208,6 +284,16 @@ export interface components {
             stock_qty: number;
             is_published?: boolean;
         };
+        /** StoreReviewRequest */
+        StoreReviewRequest: {
+            /** Format: uuid */
+            product_id: string;
+            reviewer_name: string;
+            /** Format: email */
+            email: string;
+            rating: number;
+            body: string;
+        };
         /** UpdateCategoryRequest */
         UpdateCategoryRequest: {
             name?: string;
@@ -222,6 +308,14 @@ export interface components {
             price?: number;
             stock_qty?: number;
             is_published?: boolean;
+        };
+        /** UpdateReviewRequest */
+        UpdateReviewRequest: {
+            reviewer_name?: string;
+            /** Format: email */
+            email?: string;
+            rating?: number;
+            body?: string;
         };
     };
     responses: {
@@ -498,7 +592,6 @@ export interface operations {
         parameters: {
             query?: {
                 per_page?: number;
-                cursor?: string;
                 category_id?: string;
             };
             header?: never;
@@ -624,6 +717,194 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "reviews.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Array of `ReviewResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ReviewResource"][];
+                    };
+                };
+            };
+        };
+    };
+    "reviews.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreReviewRequest"];
+            };
+        };
+        responses: {
+            /** @description `ReviewResource` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ReviewResource"];
+                    };
+                };
+            };
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "reviews.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The review ID */
+                review: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `ReviewResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ReviewResource"];
+                    };
+                };
+            };
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "reviews.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The review ID */
+                review: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["UpdateReviewRequest"];
+            };
+        };
+        responses: {
+            /** @description `ReviewResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ReviewResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "reviews.destroy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The review ID */
+                review: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "review.approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The review ID */
+                review: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `ReviewResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ReviewResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "review.reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The review ID */
+                review: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `ReviewResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ReviewResource"];
+                    };
+                };
             };
             401: components["responses"]["AuthenticationException"];
             403: components["responses"]["AuthorizationException"];

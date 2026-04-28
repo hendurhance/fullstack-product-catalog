@@ -4,10 +4,10 @@ RUN apk add --no-cache \
     git \
     unzip \
     libzip-dev \
-    libpq-dev \
     icu-dev \
     oniguruma-dev \
- && docker-php-ext-install pdo pdo_pgsql pgsql zip intl bcmath opcache
+    mysql-dev \
+  && docker-php-ext-install pdo pdo_mysql mysqli zip intl bcmath opcache
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 

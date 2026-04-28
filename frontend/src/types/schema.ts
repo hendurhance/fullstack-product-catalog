@@ -1,5 +1,4 @@
-import { boolean, integer, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
-import { foreignKey } from "drizzle-orm/pg-core";
+import { boolean, int, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 /**
  * Drizzle row schemas — kept in this repo per the brief, even though
@@ -12,32 +11,48 @@ import { foreignKey } from "drizzle-orm/pg-core";
  * a matching migration must fail typecheck via the reconciliation
  * `satisfies` block.
  */
-export const categories = pgTable("categories", {
-  id: uuid("id").primaryKey(),
-  name: text("name").notNull(),
-  slug: text("slug").notNull(),
+export const categories = mysqlTable("categories", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  name: varchar("name", { length: 120 }).notNull(),
+  slug: varchar("slug", { length: 255 }).notNull(),
   description: text("description"),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
-  deletedAt: timestamp("deleted_at", { withTimezone: true }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  deletedAt: timestamp("deleted_at"),
 });
 
 export type CategoryRow = typeof categories.$inferSelect;
 
-export const products = pgTable("products", {
-  id: uuid("id").primaryKey(),
-  categoryId: uuid("category_id")
+export const products = mysqlTable("products", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  categoryId: varchar("category_id", { length: 36 })
     .notNull()
     .references(() => categories.id, { onDelete: "cascade" }),
-  name: text("name").notNull(),
-  slug: text("slug").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  slug: varchar("slug", { length: 255 }).notNull(),
   description: text("description"),
-  price: integer("price").notNull(),
-  stockQty: integer("stock_qty").notNull().default(0),
+  price: int("price").unsigned().notNull(),
+  stockQty: int("stock_qty").unsigned().notNull().default(0),
   isPublished: boolean("is_published").notNull().default(false),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
-  deletedAt: timestamp("deleted_at", { withTimezone: true }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  deletedAt: timestamp("deleted_at"),
 });
 
 export type ProductRow = typeof products.$inferSelect;
+
+export const reviews = mysqlTable("reviews", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  productId: varchar("product_id", { length: 36 })
+    .notNull()
+    .references(() => products.id, { onDelete: "cascade" }),
+  reviewerName: varchar("reviewer_name", { length: 120 }).notNull(),
+  email: varchar("email", { length: 255 }).notNull(),
+  rating: int("rating").unsigned().notNull(),
+  body: text("body").notNull(),
+  isApproved: boolean("is_approved").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export type ReviewRow = typeof reviews.$inferSelect;

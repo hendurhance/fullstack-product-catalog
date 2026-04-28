@@ -2,7 +2,6 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -16,12 +15,9 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->timestamps();
             $table->softDeletes();
-        });
 
-        // Partial unique index: slug must be unique among non-deleted rows only.
-        DB::statement(
-            'CREATE UNIQUE INDEX categories_slug_unique_active ON categories (slug) WHERE deleted_at IS NULL'
-        );
+            $table->unique('slug');
+        });
     }
 
     public function down(): void
