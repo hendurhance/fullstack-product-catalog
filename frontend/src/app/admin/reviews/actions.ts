@@ -9,36 +9,11 @@ import {
   listReviews,
   rejectReview,
 } from "@/lib/api/reviews";
-import { ApiError } from "@/lib/api/client";
 import { requireAdminToken } from "@/lib/auth/cookies";
 import type { Review } from "@/types";
+import { handleActionError, type ActionResult, type ActionError } from "@/lib/actions";
 
-export type ActionResult<T> =
-  | { ok: true; data: T }
-  | { ok: false; error: ActionError };
-
-export type ActionError = {
-  message: string;
-  status: number;
-  code: string;
-  fields?: Record<string, string[]>;
-};
-
-function toActionError(error: unknown): ActionError {
-  if (error instanceof ApiError) {
-    return {
-      message: error.message,
-      status: error.status,
-      code: error.code,
-      fields: error.errors,
-    };
-  }
-  return {
-    message: error instanceof Error ? error.message : "Request failed",
-    status: 0,
-    code: "UNKNOWN",
-  };
-}
+export type { ActionError };
 
 export async function listReviewsAction(): Promise<
   ActionResult<Review[]>
@@ -47,7 +22,7 @@ export async function listReviewsAction(): Promise<
     const res = await listReviews({ cache: "no-store" });
     return { ok: true, data: res.data };
   } catch (error) {
-    return { ok: false, error: toActionError(error) };
+    return { ok: false, error: await handleActionError(error) };
   }
 }
 
@@ -61,7 +36,7 @@ export async function approveReviewAction(
     updateTag(REVIEW_TAGS.product(data.product_id));
     return { ok: true, data };
   } catch (error) {
-    return { ok: false, error: toActionError(error) };
+    return { ok: false, error: await handleActionError(error) };
   }
 }
 
@@ -75,7 +50,7 @@ export async function rejectReviewAction(
     updateTag(REVIEW_TAGS.product(data.product_id));
     return { ok: true, data };
   } catch (error) {
-    return { ok: false, error: toActionError(error) };
+    return { ok: false, error: await handleActionError(error) };
   }
 }
 
@@ -88,6 +63,6 @@ export async function deleteReviewAction(
     updateTag(REVIEW_TAGS.list);
     return { ok: true, data: { id } };
   } catch (error) {
-    return { ok: false, error: toActionError(error) };
+    return { ok: false, error: await handleActionError(error) };
   }
 }

@@ -9,36 +9,11 @@ import {
   listProducts,
   updateProduct,
 } from "@/lib/api/products";
-import { ApiError } from "@/lib/api/client";
 import { requireAdminToken } from "@/lib/auth/cookies";
 import type { Product, StoreProductInput, UpdateProductInput } from "@/types";
+import { handleActionError, type ActionResult, type ActionError } from "@/lib/actions";
 
-export type ActionResult<T> =
-  | { ok: true; data: T }
-  | { ok: false; error: ActionError };
-
-export type ActionError = {
-  message: string;
-  status: number;
-  code: string;
-  fields?: Record<string, string[]>;
-};
-
-function toActionError(error: unknown): ActionError {
-  if (error instanceof ApiError) {
-    return {
-      message: error.message,
-      status: error.status,
-      code: error.code,
-      fields: error.errors,
-    };
-  }
-  return {
-    message: error instanceof Error ? error.message : "Request failed",
-    status: 0,
-    code: "UNKNOWN",
-  };
-}
+export type { ActionError };
 
 export async function listProductsAction(): Promise<
   ActionResult<Product[]>
@@ -47,7 +22,7 @@ export async function listProductsAction(): Promise<
     const res = await listProducts({ cache: "no-store" });
     return { ok: true, data: res.data };
   } catch (error) {
-    return { ok: false, error: toActionError(error) };
+    return { ok: false, error: await handleActionError(error) };
   }
 }
 
@@ -61,7 +36,7 @@ export async function createProductAction(
     updateTag(PRODUCT_TAGS.category(data.category_id));
     return { ok: true, data };
   } catch (error) {
-    return { ok: false, error: toActionError(error) };
+    return { ok: false, error: await handleActionError(error) };
   }
 }
 
@@ -80,7 +55,7 @@ export async function updateProductAction(
     updateTag(PRODUCT_TAGS.category(data.category_id));
     return { ok: true, data };
   } catch (error) {
-    return { ok: false, error: toActionError(error) };
+    return { ok: false, error: await handleActionError(error) };
   }
 }
 
@@ -94,7 +69,7 @@ export async function deleteProductAction(
     updateTag(PRODUCT_TAGS.detail(slug));
     return { ok: true, data: { slug } };
   } catch (error) {
-    return { ok: false, error: toActionError(error) };
+    return { ok: false, error: await handleActionError(error) };
   }
 }
 
@@ -110,6 +85,6 @@ export async function togglePublishedAction(
     updateTag(PRODUCT_TAGS.category(data.category_id));
     return { ok: true, data };
   } catch (error) {
-    return { ok: false, error: toActionError(error) };
+    return { ok: false, error: await handleActionError(error) };
   }
 }
