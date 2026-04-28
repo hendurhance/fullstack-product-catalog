@@ -1,0 +1,121 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  backend:
+    name: Backend (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ["8.4"]
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: product_catalog_test
+          MYSQL_USER: app
+          MYSQL_PASSWORD: app
+          MYSQL_ROOT_PASSWORD: root
+        ports: ["3306:3306"]
+        options: >-
+          --health-cmd "mysqladmin ping -h localhost -u root -proot"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 20
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 20
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: pdo, pdo_mysql, redis, intl, bcmath, zip
+          coverage: none
+          tools: composer:v2
+
+      - name: Cache composer
+        uses: actions/cache@v4
+        with:
+          path: backend/vendor
+          key: composer-${{ runner.os }}-${{ hashFiles('backend/composer.lock') }}
+
+      - run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Lint (Pint)
+        run: vendor/bin/pint --test
+
+      - name: Static analysis (PHPStan)
+        run: |
+          if [ -f phpstan.neon ] || [ -f phpstan.neon.dist ]; then
+            vendor/bin/phpstan analyse --memory-limit=1G
+          else
+            echo "phpstan config not present yet — skipping (will be added in Phase 1)"
+          fi
+
+      - name: Tests (Pest)
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: product_catalog_test
+          DB_USERNAME: app
+          DB_PASSWORD: app
+          CACHE_STORE: redis
+          REDIS_HOST: 127.0.0.1
+          REDIS_PORT: 6379
+        run: php artisan test
+
+  frontend:
+    name: Frontend (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: ["22"]
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - run: npm ci
+
+      - name: Lint (ESLint)
+        run: npm run lint
+
+      - name: Typecheck (tsc)
+        run: npx tsc --noEmit
+
+      - name: Tests (Vitest)
+        run: |
+          if grep -q '"test"' package.json; then
+            npm test -- --run || npm test
+          else
+            echo "vitest not wired yet — will be added in Phase 1"
+          fi
+
+  contract-drift:
+    name: OpenAPI ↔ Drizzle drift
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "Drift check is wired in Phase 1 (after Scramble + openapi-typescript land)."

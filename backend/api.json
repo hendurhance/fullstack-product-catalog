@@ -278,7 +278,6 @@
                         "name": "category",
                         "in": "path",
                         "required": true,
-                        "description": "The category slug",
                         "schema": {
                             "type": "string"
                         }
@@ -403,7 +402,6 @@
         "/v1/products": {
             "get": {
                 "operationId": "products.index",
-                "summary": "Display a listing of the resource",
                 "tags": [
                     "Product"
                 ],
@@ -428,22 +426,11 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Array of `ProductResource`",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/ProductResource"
-                                            }
-                                        }
-                                    },
-                                    "required": [
-                                        "data"
-                                    ]
+                                    "type": "object"
                                 }
                             }
                         }
@@ -455,7 +442,6 @@
             },
             "post": {
                 "operationId": "products.store",
-                "summary": "Store a newly created resource in storage",
                 "tags": [
                     "Product"
                 ],
@@ -508,7 +494,6 @@
         "/v1/products/{product}": {
             "get": {
                 "operationId": "products.show",
-                "summary": "Display the specified resource",
                 "tags": [
                     "Product"
                 ],
@@ -517,7 +502,6 @@
                         "name": "product",
                         "in": "path",
                         "required": true,
-                        "description": "The product slug",
                         "schema": {
                             "type": "string"
                         }
@@ -541,7 +525,6 @@
             },
             "put": {
                 "operationId": "products.update",
-                "summary": "Update the specified resource in storage",
                 "tags": [
                     "Product"
                 ],
@@ -605,7 +588,6 @@
             },
             "delete": {
                 "operationId": "products.destroy",
-                "summary": "Remove the specified resource from storage",
                 "tags": [
                     "Product"
                 ],
@@ -649,22 +631,11 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Array of `ReviewResource`",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/ReviewResource"
-                                            }
-                                        }
-                                    },
-                                    "required": [
-                                        "data"
-                                    ]
+                                    "type": "object"
                                 }
                             }
                         }
@@ -731,19 +702,11 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "`ReviewResource`",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/components/schemas/ReviewResource"
-                                        }
-                                    },
-                                    "required": [
-                                        "data"
-                                    ]
+                                    "type": "object"
                                 }
                             }
                         }
@@ -1065,8 +1028,7 @@
                                 "type": "number"
                             },
                             "count": {
-                                "type": "integer",
-                                "minimum": 0
+                                "type": "integer"
                             }
                         },
                         "required": [

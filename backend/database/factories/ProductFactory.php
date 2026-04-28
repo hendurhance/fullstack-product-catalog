@@ -24,7 +24,7 @@ class ProductFactory extends Factory
         return [
             'category_id' => Category::factory(),
             'name' => Str::title($name),
-            'slug' => Str::slug($name) . '-' . Str::lower(Str::random(4)),
+            'slug' => Str::slug($name).'-'.Str::lower(Str::random(4)),
             'description' => fake()->sentence(12),
             'price' => fake()->numberBetween(100, 99999),
             'stock_qty' => fake()->numberBetween(0, 500),

@@ -130,10 +130,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Display a listing of the resource */
         get: operations["products.index"];
         put?: never;
-        /** Store a newly created resource in storage */
         post: operations["products.store"];
         delete?: never;
         options?: never;
@@ -148,12 +146,9 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Display the specified resource */
         get: operations["products.show"];
-        /** Update the specified resource in storage */
         put: operations["products.update"];
         post?: never;
-        /** Remove the specified resource from storage */
         delete: operations["products.destroy"];
         options?: never;
         head?: never;
@@ -517,7 +512,6 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The category slug */
                 category: string;
             };
             cookie?: never;
@@ -604,15 +598,12 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Array of `ProductResource` */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        data: components["schemas"]["ProductResource"][];
-                    };
+                    "application/json": Record<string, never>;
                 };
             };
             422: components["responses"]["ValidationException"];
@@ -652,7 +643,6 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The product slug */
                 product: string;
             };
             cookie?: never;
@@ -736,15 +726,12 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Array of `ReviewResource` */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        data: components["schemas"]["ReviewResource"][];
-                    };
+                    "application/json": Record<string, never>;
                 };
             };
         };
@@ -788,15 +775,12 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description `ReviewResource` */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        data: components["schemas"]["ReviewResource"];
-                    };
+                    "application/json": Record<string, never>;
                 };
             };
             404: components["responses"]["ModelNotFoundException"];

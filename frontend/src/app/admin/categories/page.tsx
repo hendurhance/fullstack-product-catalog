@@ -3,10 +3,10 @@ import { Eyebrow } from "@/components/primitives";
 
 import { listCategoriesAction } from "./actions";
 import { CategoriesTable } from "./_components/categories-table";
-import { requireAdmin } from "../layout";
+import { requireAdminToken } from "@/lib/auth/cookies";
 
 async function CategoriesData() {
-  await requireAdmin();
+  await requireAdminToken();
   const initial = await listCategoriesAction();
 
   return (

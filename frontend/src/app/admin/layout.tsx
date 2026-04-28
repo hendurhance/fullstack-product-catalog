@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import { redirect } from "next/navigation";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
@@ -106,10 +105,3 @@ async function AdminHeader() {
   );
 }
 
-export async function requireAdmin(): Promise<string> {
-  const token = await getAdminToken();
-  if (!token) {
-    redirect("/admin/login");
-  }
-  return token;
-}

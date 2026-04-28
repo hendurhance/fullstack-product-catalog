@@ -1,5 +1,6 @@
 import "server-only";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 /*
  * Admin token storage. HttpOnly so JS can't read it (mitigates XSS-driven
@@ -36,7 +37,7 @@ export async function getAdminToken(): Promise<string | null> {
 export async function requireAdminToken(): Promise<string> {
   const token = await getAdminToken();
   if (!token) {
-    throw new Error("Admin token missing");
+    redirect("/admin/login");
   }
   return token;
 }

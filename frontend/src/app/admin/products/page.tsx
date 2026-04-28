@@ -3,11 +3,11 @@ import { Eyebrow } from "@/components/primitives";
 
 import { listProductsAction } from "./actions";
 import { ProductsTable } from "./_components/products-table";
-import { requireAdmin } from "../layout";
+import { requireAdminToken } from "@/lib/auth/cookies";
 import { listCategories } from "@/lib/api/categories";
 
 async function ProductsData() {
-  await requireAdmin();
+  await requireAdminToken();
   const [productsResult, categories] = await Promise.all([
     listProductsAction(),
     listCategories({ cache: "no-store" }),

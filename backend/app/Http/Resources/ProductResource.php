@@ -35,7 +35,7 @@ final class ProductResource extends JsonResource
             'is_published' => $product->is_published,
             'review_summary' => [
                 'average_rating' => round((float) ($product->approved_reviews_avg_rating ?? 0), 1),
-                'count' => $product->approved_reviews_count ?? 0,
+                'count' => (int) ($product->approved_reviews_count ?? 0),
             ],
             'created_at' => $product->created_at?->toIso8601String(),
             'updated_at' => $product->updated_at?->toIso8601String(),

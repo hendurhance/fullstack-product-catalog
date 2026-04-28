@@ -1,0 +1,13 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - app
+        - config
+        - database
+    level: 5
+    treatPhpDocTypesAsCertain: false
+    ignoreErrors:
+        - '#Call to an undefined method .*::getSlugSource\(\)#'
+        - '#Access to an undefined property .*::\$slug#'

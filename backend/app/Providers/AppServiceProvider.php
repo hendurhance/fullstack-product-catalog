@@ -2,13 +2,13 @@
 
 namespace App\Providers;
 
+use App\Support\Cache\RevalidationService;
 use Dedoc\Scramble\Scramble;
 use Dedoc\Scramble\Support\Generator\OpenApi;
+use Dedoc\Scramble\Support\Generator\Operation;
 use Dedoc\Scramble\Support\Generator\SecurityRequirement;
 use Dedoc\Scramble\Support\Generator\SecurityScheme;
-use Dedoc\Scramble\Support\Generator\Operation;
 use Dedoc\Scramble\Support\RouteInfo;
-use App\Support\Cache\RevalidationService;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider

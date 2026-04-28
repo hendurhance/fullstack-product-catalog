@@ -3,10 +3,10 @@ import { Eyebrow } from "@/components/primitives";
 
 import { listReviewsAction } from "./actions";
 import { ReviewsTable } from "./_components/reviews-table";
-import { requireAdmin } from "../layout";
+import { requireAdminToken } from "@/lib/auth/cookies";
 
 async function ReviewsData() {
-  await requireAdmin();
+  await requireAdminToken();
   const result = await listReviewsAction();
 
   return (
