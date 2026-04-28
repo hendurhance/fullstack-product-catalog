@@ -106,7 +106,7 @@ export function ProductReviews({
         )}
       </div>
 
-      <div className="grid gap-12 lg:grid-cols-[1fr_380px]">
+      <div className="grid gap-12 lg:grid-cols-[1fr_380px] lg:items-start">
         <Suspense fallback={<ReviewListSkeleton />}>
           <ReviewList productId={productId} />
         </Suspense>
