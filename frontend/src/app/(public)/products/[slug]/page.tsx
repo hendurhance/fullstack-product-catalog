@@ -10,6 +10,7 @@ import {
 import { formatPrice } from "@/lib/money";
 import type { Product } from "@/types";
 import { ApiError } from "@/lib/api/client";
+import { ProductReviews } from "./product-reviews";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -96,6 +97,12 @@ export default async function ProductDetailPage({ params }: PageProps) {
           <p className="text-(--ink-faint) italic">No description.</p>
         </div>
       )}
+
+      <ProductReviews
+        productId={product.id}
+        averageRating={product.review_summary?.average_rating ?? 0}
+        reviewCount={product.review_summary?.count ?? 0}
+      />
 
       <footer className="mt-20 grid gap-2 border-t border-(--rule) pt-6 sm:grid-cols-2 sm:gap-0">
         <dl className="grid grid-cols-[max-content_1fr] gap-x-3 gap-y-1 text-xs">

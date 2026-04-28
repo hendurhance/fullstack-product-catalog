@@ -36,6 +36,11 @@ const nextConfig: NextConfig = {
       revalidate: 120,
       expire: 600,
     },
+    reviewList: {
+      stale: 60,
+      revalidate: 60,
+      expire: 180,
+    },
   },
 };
 

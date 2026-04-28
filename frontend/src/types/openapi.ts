@@ -254,6 +254,10 @@ export interface components {
             price_display: string;
             stock_qty: number;
             is_published: boolean;
+            review_summary: {
+                average_rating: number;
+                count: number;
+            };
             created_at: string;
             updated_at: string;
         };

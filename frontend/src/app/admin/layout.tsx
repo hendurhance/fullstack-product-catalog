@@ -68,6 +68,12 @@ async function AdminHeader() {
               >
                 Products
               </Link>
+              <Link
+                href="/admin/reviews"
+                className="rounded-[6px] px-2.5 py-1 text-(--ink) transition-colors hover:bg-(--paper)"
+              >
+                Reviews
+              </Link>
             </nav>
           ) : null}
         </div>

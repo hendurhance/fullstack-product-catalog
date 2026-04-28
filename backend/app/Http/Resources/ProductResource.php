@@ -33,6 +33,10 @@ final class ProductResource extends JsonResource
             'price_display' => $money->format(),
             'stock_qty' => $product->stock_qty,
             'is_published' => $product->is_published,
+            'review_summary' => [
+                'average_rating' => round((float) $product->approvedReviews()->avg('rating') ?? 0, 1),
+                'count' => $product->approvedReviews()->count(),
+            ],
             'created_at' => $product->created_at?->toIso8601String(),
             'updated_at' => $product->updated_at?->toIso8601String(),
         ];

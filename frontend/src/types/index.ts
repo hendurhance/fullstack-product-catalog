@@ -55,13 +55,37 @@ type ProductRowContract = {
   description: ProductRow["description"];
 };
 
+type ReviewContract = {
+  id: Review["id"];
+  product_id: Review["product_id"];
+  reviewer_name: Review["reviewer_name"];
+  email: Review["email"];
+  rating: Review["rating"];
+  body: Review["body"];
+  is_approved: Review["is_approved"];
+};
+
+type ReviewRowContract = {
+  id: ReviewRow["id"];
+  product_id: ReviewRow["productId"];
+  reviewer_name: ReviewRow["reviewerName"];
+  email: ReviewRow["email"];
+  rating: ReviewRow["rating"];
+  body: ReviewRow["body"];
+  is_approved: ReviewRow["isApproved"];
+};
+
 // Compile-time reconciliation. If the row drifts, both sides fail to
 // satisfy the contract and the build breaks before reaching CI.
 const _categoryContract = {} as CategoryContract satisfies CategoryRowContract;
 const _categoryRowContract = {} as CategoryRowContract satisfies CategoryContract;
 const _productContract = {} as ProductContract satisfies ProductRowContract;
 const _productRowContract = {} as ProductRowContract satisfies ProductContract;
+const _reviewContract = {} as ReviewContract satisfies ReviewRowContract;
+const _reviewRowContract = {} as ReviewRowContract satisfies ReviewContract;
 void _categoryContract;
 void _categoryRowContract;
 void _productContract;
 void _productRowContract;
+void _reviewContract;
+void _reviewRowContract;
