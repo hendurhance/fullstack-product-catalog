@@ -591,6 +591,7 @@ export interface operations {
             query?: {
                 per_page?: number;
                 category_id?: string;
+                cursor?: string;
             };
             header?: never;
             path?: never;
@@ -719,7 +720,10 @@ export interface operations {
     };
     "reviews.index": {
         parameters: {
-            query?: never;
+            query?: {
+                product_id?: string;
+                cursor?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
