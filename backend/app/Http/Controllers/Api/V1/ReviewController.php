@@ -37,9 +37,20 @@ final class ReviewController extends Controller implements HasMiddleware
 
     public function index(Request $request): ResponseAlias
     {
-        $reviews = $this->service->list(
-            perPage: (int) $request->query('per_page', 15),
-        );
+        $productId = $request->query('product_id');
+
+        $reviews = $productId
+            ? $this->service->listByProduct(
+                productId: $productId,
+                perPage: (int) $request->query('per_page', 15),
+                cursor: $request->query('cursor'),
+                path: $request->url(),
+            )
+            : $this->service->list(
+                perPage: (int) $request->query('per_page', 15),
+                cursor: $request->query('cursor'),
+                path: $request->url(),
+            );
 
         return CacheableResponse::apply(
             ReviewResource::collection($reviews)->toResponse($request),

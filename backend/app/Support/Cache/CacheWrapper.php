@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Support\Cache;
 
 use Closure;
+use Illuminate\Contracts\Pagination\CursorPaginator;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Pagination\Cursor;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -41,6 +44,47 @@ final class CacheWrapper
             $key,
             [$jittered, $jittered * 5],
             $callback,
+        );
+    }
+
+    /**
+     * Cache a cursor-paginated result set.
+     *
+     * Paginators contain Eloquent models that can't be serialized, so
+     * we store items as arrays + a next_cursor flag, then hydrate and
+     * reconstruct on read. All inputs (cursor, path) are parameters —
+     * no request() calls inside.
+     *
+     * @param  array<string>  $tags
+     * @param  class-string<Model>  $modelClass
+     * @param  Closure(): CursorPaginator  $query
+     */
+    public function rememberPaginator(
+        array $tags,
+        string $key,
+        int $ttl,
+        string $modelClass,
+        int $perPage,
+        ?string $cursor,
+        string $path,
+        Closure $query,
+    ): CursorPaginator {
+        $data = $this->remember($tags, $key, $ttl, function () use ($query): array {
+            $paginator = $query();
+
+            return [
+                'items' => collect($paginator->items())->map->toArray()->all(),
+                'next_cursor' => $paginator->nextCursor()?->encode(),
+            ];
+        });
+
+        $items = $modelClass::hydrate($data['items']);
+        $hasMore = $data['next_cursor'] !== null;
+        $cursorObj = $cursor !== null ? Cursor::fromEncoded($cursor) : null;
+
+        return new RestoredCursorPaginator(
+            $items, $perPage, $cursorObj, $hasMore,
+            ['path' => $path, 'cursorName' => 'cursor'],
         );
     }
 

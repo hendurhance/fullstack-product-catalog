@@ -40,6 +40,8 @@ final class ProductController extends Controller implements HasMiddleware
         $products = $this->service->list(
             perPage: (int) $request->validated('per_page', 15),
             categoryId: $request->validated('category_id'),
+            cursor: $request->query('cursor'),
+            path: $request->url(),
         );
 
         return CacheableResponse::apply(

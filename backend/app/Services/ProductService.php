@@ -22,12 +22,29 @@ final class ProductService
         private readonly RevalidationService $revalidation,
     ) {}
 
-    /**
-     * @return CursorPaginator<int, Product>
-     */
-    public function list(int $perPage = 15, ?string $categoryId = null): CursorPaginator
-    {
-        return $this->repository->list($perPage, $categoryId);
+    public function list(
+        int $perPage = 15,
+        ?string $categoryId = null,
+        ?string $cursor = null,
+        string $path = '/',
+    ): CursorPaginator {
+        $key = sprintf(
+            'products:list:%d:%s:%s',
+            $perPage,
+            $categoryId ?? '*',
+            $cursor ?? '',
+        );
+
+        return $this->cache->rememberPaginator(
+            [CachePolicy::tag(self::DOMAIN, 'list')],
+            $key,
+            CachePolicy::ttl(self::DOMAIN, 'list'),
+            Product::class,
+            $perPage,
+            $cursor,
+            $path,
+            fn () => $this->repository->list($perPage, $categoryId),
+        );
     }
 
     public function findBySlug(string $slug): ?Product

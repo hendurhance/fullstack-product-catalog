@@ -22,20 +22,43 @@ final class ReviewService
         private readonly RevalidationService $revalidation,
     ) {}
 
-    /**
-     * @return CursorPaginator<int, Review>
-     */
-    public function list(int $perPage = 15): CursorPaginator
-    {
-        return $this->repository->list($perPage);
+    public function list(
+        int $perPage = 15,
+        ?string $cursor = null,
+        string $path = '/',
+    ): CursorPaginator {
+        $key = sprintf('reviews:list:%d:%s', $perPage, $cursor ?? '');
+
+        return $this->cache->rememberPaginator(
+            [CachePolicy::tag(self::DOMAIN, 'list')],
+            $key,
+            CachePolicy::ttl(self::DOMAIN, 'list'),
+            Review::class,
+            $perPage,
+            $cursor,
+            $path,
+            fn () => $this->repository->list($perPage),
+        );
     }
 
-    /**
-     * @return CursorPaginator<int, Review>
-     */
-    public function listByProduct(string $productId, int $perPage = 15): CursorPaginator
-    {
-        return $this->repository->listByProduct($productId, $perPage);
+    public function listByProduct(
+        string $productId,
+        int $perPage = 15,
+        ?string $cursor = null,
+        string $path = '/',
+    ): CursorPaginator {
+        $key = sprintf('reviews:product:%s:%d:%s', $productId, $perPage, $cursor ?? '');
+
+        return $this->cache->rememberPaginator(
+            [CachePolicy::resolveTag(self::DOMAIN, 'product', ['id' => $productId])],
+            $key,
+            CachePolicy::ttl(self::DOMAIN, 'product'),
+            Review::class,
+            $perPage,
+            $cursor,
+            $path,
+            fn () => $this->repository->listByProduct($productId, $perPage),
+        );
     }
 
     public function find(string $id): ?Review
@@ -105,6 +128,7 @@ final class ReviewService
         $tags = [
             CachePolicy::tag('products', 'detail'),
             CachePolicy::resolveTag(self::DOMAIN, 'product', ['id' => $productId]),
+            CachePolicy::tag(self::DOMAIN, 'list'),
         ];
 
         $this->cache->flush($tags);

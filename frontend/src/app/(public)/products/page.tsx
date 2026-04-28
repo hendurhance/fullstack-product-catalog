@@ -4,7 +4,7 @@ import { cacheLife, cacheTag } from "next/cache";
 
 import { listProducts, listProductsByCategory } from "@/lib/api/products";
 import { CATEGORY_TAGS, listCategories } from "@/lib/api/categories";
-import { formatPrice } from "@/lib/money";
+import { ProductListClient } from "./product-list-client";
 
 export const metadata = {
   title: "Products · Acme",
@@ -53,56 +53,13 @@ async function ProductGrid({ categoryId }: { categoryId?: string }) {
   const res = categoryId
     ? await listProductsByCategory(categoryId)
     : await listProducts();
-  const products = res.data;
-
-  if (products.length === 0) {
-    return (
-      <div className="rounded-[12px] border border-dashed border-(--rule-strong) px-8 py-16 text-center">
-        <p className="acme-display text-xl text-(--ink)">No products found</p>
-        <p className="mt-2 text-sm text-(--ink-muted)">
-          {categoryId
-            ? "No products in this category yet."
-            : "The catalog will populate once products are published."}
-        </p>
-      </div>
-    );
-  }
 
   return (
-    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-      {products.map((p) => (
-        <Link
-          key={p.id}
-          href={`/products/${p.slug}`}
-          className="group rounded-[12px] border border-(--rule) bg-(--paper-2) p-5 transition-[border-color,box-shadow] hover:border-(--ink-muted) hover:shadow-[0_8px_30px_-12px_rgba(0,0,0,0.12)]"
-        >
-          <div className="flex items-start justify-between gap-2">
-            <h2 className="acme-display text-[18px] leading-snug text-(--ink) transition-transform group-hover:translate-x-0.5">
-              {p.name}
-            </h2>
-            <span
-              aria-hidden
-              className="mt-1 text-(--ink-faint) transition-transform group-hover:translate-x-1 group-hover:text-(--ink)"
-            >
-              →
-            </span>
-          </div>
-          {p.description ? (
-            <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-(--ink-muted)">
-              {p.description}
-            </p>
-          ) : null}
-          <div className="mt-4 flex items-baseline justify-between">
-            <span className="acme-mono text-sm font-medium text-(--ink)">
-              {formatPrice(p.price)}
-            </span>
-            <span className="acme-mono text-[11px] text-(--ink-faint)">
-              {p.stock_qty > 0 ? `${p.stock_qty} in stock` : "Out of stock"}
-            </span>
-          </div>
-        </Link>
-      ))}
-    </div>
+    <ProductListClient
+      initialProducts={res.data}
+      initialNextCursor={res.meta.next_cursor}
+      categoryId={categoryId}
+    />
   );
 }
 
