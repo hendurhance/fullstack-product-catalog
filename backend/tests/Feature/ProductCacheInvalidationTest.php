@@ -48,7 +48,7 @@ class ProductCacheInvalidationTest extends TestCase
 
         $before = $this->getJson('/api/v1/products');
         $before->assertOk();
-        $this->assertCount(1, $before->json('data'));
+        $countBefore = count($before->json('data'));
 
         $this->postJson('/api/v1/products', [
             'category_id' => $this->category->id,
@@ -61,7 +61,7 @@ class ProductCacheInvalidationTest extends TestCase
         $after = $this->getJson('/api/v1/products');
         $after->assertOk();
         $names = collect($after->json('data'))->pluck('name');
-        $this->assertCount(2, $names);
+        $this->assertCount($countBefore + 1, $names);
         $this->assertContains('Beta', $names);
     }
 

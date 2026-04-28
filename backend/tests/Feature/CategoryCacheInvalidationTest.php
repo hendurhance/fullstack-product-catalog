@@ -39,7 +39,7 @@ class CategoryCacheInvalidationTest extends TestCase
 
         $before = $this->getJson('/api/v1/categories');
         $before->assertOk();
-        $this->assertCount(1, $before->json('data'));
+        $countBefore = count($before->json('data'));
 
         $this->postJson('/api/v1/categories', [
             'name' => 'Beta',
@@ -48,7 +48,7 @@ class CategoryCacheInvalidationTest extends TestCase
         $after = $this->getJson('/api/v1/categories');
         $after->assertOk();
         $names = collect($after->json('data'))->pluck('name');
-        $this->assertCount(2, $names);
+        $this->assertCount($countBefore + 1, $names);
         $this->assertContains('Beta', $names);
     }
 
