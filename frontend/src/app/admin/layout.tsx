@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 
 import { AdminProviders } from "@/components/providers";
 import { Button, Eyebrow } from "@/components/primitives";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { getAdminToken } from "@/lib/auth/cookies";
 
 import { logoutAction } from "./login/actions";
@@ -79,6 +80,7 @@ async function AdminHeader() {
         </div>
 
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           <Link
             href="/categories"
             className="hidden text-xs text-(--ink-muted) transition-colors hover:text-(--ink) sm:inline"

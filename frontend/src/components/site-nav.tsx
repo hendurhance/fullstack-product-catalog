@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
+import { ThemeToggle } from "@/components/theme-toggle";
+
 export function SiteNav() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
@@ -25,7 +27,7 @@ export function SiteNav() {
           <span className="acme-display text-[15px] tracking-tight">Acme</span>
         </Link>
 
-        <nav className="hidden items-center gap-6 text-sm sm:flex">
+        <nav className="hidden items-center gap-4 text-sm sm:flex">
           <NavLink href="/products" active={pathname === "/products"}>
             Products
           </NavLink>
@@ -38,25 +40,29 @@ export function SiteNav() {
           >
             Admin
           </Link>
+          <ThemeToggle />
         </nav>
 
-        <button
-          type="button"
-          className="flex size-9 items-center justify-center rounded-[6px] text-(--ink) transition-colors hover:bg-(--paper) sm:hidden"
-          onClick={() => setOpen(!open)}
-          aria-label={open ? "Close menu" : "Open menu"}
-          aria-expanded={open}
-        >
-          {open ? (
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
-              <path d="M4 4l10 10M14 4L4 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
-          ) : (
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
-              <path d="M3 5h12M3 9h12M3 13h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
-          )}
-        </button>
+        <div className="flex items-center gap-1 sm:hidden">
+          <ThemeToggle />
+          <button
+            type="button"
+            className="flex size-9 items-center justify-center rounded-[6px] text-(--ink) transition-colors hover:bg-(--paper)"
+            onClick={() => setOpen(!open)}
+            aria-label={open ? "Close menu" : "Open menu"}
+            aria-expanded={open}
+          >
+            {open ? (
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
+                <path d="M4 4l10 10M14 4L4 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
+                <path d="M3 5h12M3 9h12M3 13h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+            )}
+          </button>
+        </div>
       </div>
 
       {open && (

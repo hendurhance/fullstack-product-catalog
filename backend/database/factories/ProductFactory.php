@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
 /**
  * @extends Factory<Product>
@@ -22,8 +23,8 @@ class ProductFactory extends Factory
 
         return [
             'category_id' => Category::factory(),
-            'name' => \Illuminate\Support\Str::title($name),
-            'slug' => \Illuminate\Support\Str::slug($name) . '-' . \Illuminate\Support\Str::lower(\Illuminate\Support\Str::random(4)),
+            'name' => Str::title($name),
+            'slug' => Str::slug($name) . '-' . Str::lower(Str::random(4)),
             'description' => fake()->sentence(12),
             'price' => fake()->numberBetween(100, 99999),
             'stock_qty' => fake()->numberBetween(0, 500),

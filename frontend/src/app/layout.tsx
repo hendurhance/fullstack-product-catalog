@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 
+import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -21,6 +23,8 @@ export const metadata: Metadata = {
     "Acme is a small product catalog with a typed contract from Laravel through Next.js.",
 };
 
+const themeScript = `try{document.documentElement.classList.toggle("dark",localStorage.getItem("acme-theme")==="dark")}catch{}`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -30,9 +34,15 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
+      <head>
+        <Script id="theme-init" strategy="beforeInteractive">
+          {themeScript}
+        </Script>
+      </head>
       <body className="min-h-full flex flex-col bg-(--paper) text-(--ink)">
-        {children}
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );

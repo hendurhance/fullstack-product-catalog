@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { cacheLife, cacheTag } from "next/cache";
 
-import { PRODUCT_TAGS, listProducts } from "@/lib/api/products";
+import { listProducts, listProductsByCategory } from "@/lib/api/products";
 import { CATEGORY_TAGS, listCategories } from "@/lib/api/categories";
 import { formatPrice } from "@/lib/money";
 
@@ -11,20 +11,58 @@ export const metadata = {
   description: "Browse our curated product catalog.",
 };
 
-async function ProductGrid() {
+async function CategoryFilterBar({ activeCategory }: { activeCategory?: string }) {
   "use cache";
-  cacheLife("productList");
-  cacheTag(PRODUCT_TAGS.list);
+  cacheLife("categoryList");
+  cacheTag(CATEGORY_TAGS.list);
 
-  const res = await listProducts();
+  const categories = await listCategories();
+
+  if (categories.length === 0) return null;
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      <Link
+        href="/products"
+        className={`rounded-[8px] border px-3.5 py-1.5 text-sm font-medium transition-colors ${
+          !activeCategory
+            ? "border-(--ink) bg-(--ink) text-(--paper)"
+            : "border-(--rule-strong) bg-(--paper-2) text-(--ink-muted) hover:border-(--ink-muted) hover:text-(--ink)"
+        }`}
+      >
+        All
+      </Link>
+      {categories.map((c) => (
+        <Link
+          key={c.id}
+          href={`/products?category=${c.slug}`}
+          className={`rounded-[8px] border px-3.5 py-1.5 text-sm transition-colors ${
+            activeCategory === c.slug
+              ? "border-(--ink) bg-(--ink) text-(--paper) font-medium"
+              : "border-(--rule-strong) bg-(--paper-2) text-(--ink-muted) hover:border-(--ink-muted) hover:text-(--ink)"
+          }`}
+        >
+          {c.name}
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+async function ProductGrid({ categoryId }: { categoryId?: string }) {
+  const res = categoryId
+    ? await listProductsByCategory(categoryId)
+    : await listProducts();
   const products = res.data;
 
   if (products.length === 0) {
     return (
       <div className="rounded-[12px] border border-dashed border-(--rule-strong) px-8 py-16 text-center">
-        <p className="acme-display text-xl text-(--ink)">No products yet</p>
+        <p className="acme-display text-xl text-(--ink)">No products found</p>
         <p className="mt-2 text-sm text-(--ink-muted)">
-          The catalog will populate once products are published.
+          {categoryId
+            ? "No products in this category yet."
+            : "The catalog will populate once products are published."}
         </p>
       </div>
     );
@@ -68,36 +106,6 @@ async function ProductGrid() {
   );
 }
 
-async function CategoryFilter() {
-  "use cache";
-  cacheLife("categoryList");
-  cacheTag(CATEGORY_TAGS.list);
-
-  const categories = await listCategories();
-
-  if (categories.length === 0) return null;
-
-  return (
-    <div className="flex flex-wrap gap-2">
-      <Link
-        href="/products"
-        className="rounded-[8px] border border-(--ink) bg-(--ink) px-3.5 py-1.5 text-sm font-medium text-(--paper) transition-colors"
-      >
-        All
-      </Link>
-      {categories.map((c) => (
-        <Link
-          key={c.id}
-          href={`/categories/${c.slug}`}
-          className="rounded-[8px] border border-(--rule-strong) bg-(--paper-2) px-3.5 py-1.5 text-sm text-(--ink-muted) transition-colors hover:border-(--ink-muted) hover:text-(--ink)"
-        >
-          {c.name}
-        </Link>
-      ))}
-    </div>
-  );
-}
-
 function ProductSkeleton() {
   return (
     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -116,7 +124,32 @@ function ProductSkeleton() {
   );
 }
 
-export default function ProductsPage() {
+async function CategoryResolver({ categorySlug }: { categorySlug?: string }) {
+  if (!categorySlug) {
+    return (
+      <Suspense fallback={<ProductSkeleton />}>
+        <ProductGrid />
+      </Suspense>
+    );
+  }
+
+  const categories = await listCategories();
+  const cat = categories.find((c) => c.slug === categorySlug);
+
+  return (
+    <Suspense fallback={<ProductSkeleton />}>
+      <ProductGrid categoryId={cat?.id} />
+    </Suspense>
+  );
+}
+
+export default async function ProductsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string }>;
+}) {
+  const { category } = await searchParams;
+
   return (
     <main className="acme-grain mx-auto w-full max-w-5xl px-6 py-20">
       <header className="mb-10">
@@ -139,13 +172,11 @@ export default function ProductsPage() {
             </div>
           }
         >
-          <CategoryFilter />
+          <CategoryFilterBar activeCategory={category} />
         </Suspense>
       </div>
 
-      <Suspense fallback={<ProductSkeleton />}>
-        <ProductGrid />
-      </Suspense>
+      <CategoryResolver categorySlug={category} />
 
       <footer className="mt-16 flex items-baseline justify-between border-t border-(--rule) pt-6 text-xs text-(--ink-faint)">
         <span className="acme-mono">/v1/products</span>
