@@ -6,34 +6,89 @@ A full-stack product catalog with a Laravel 13 API backend, Next.js 16 frontend,
 
 ## Quickstart
 
+### Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/) + Docker Compose (v2+)
+- `make` (GNU or BSD — pre-installed on macOS/Linux)
+
+### First-time setup
+
+No environment variable configuration needed — sensible defaults are baked into `infra/docker-compose.yml`.
+
 ```bash
-make up      # bring up the full stack (MySQL, Redis, backend, frontend)
-make seed    # run migrations and seeders
-make test    # run backend + frontend test suites
-make down    # tear down
+# 1. Clone and enter the repo
+git clone https://github.com/hendurhance/fullstack-product-catalog.git && cd fullstack-product-catalog
+
+# 2. Build and start the full stack
+#    This pulls MySQL 8.4, Redis 7, builds the Laravel backend
+#    and Next.js frontend, then starts all four services.
+#    First run takes ~2 min for image builds + composer/npm install.
+make up
+
+# 3. Wait for services to be healthy (~10-15s)
+#    MySQL and Redis have health checks; backend waits for both.
+docker compose -f infra/docker-compose.yml ps    # all should show "healthy" or "running"
+
+# 4. Run database migrations + seed demo data
+make seed
+# Creates: 3 categories, 8 products (6 published, 2 draft), 10 reviews (7 approved, 3 pending)
+# Also creates an admin user: admin@example.com / password
+
+# 5. Verify everything is running
+curl http://localhost:8000/api/v1/health
+# {"status":"ok",...}
 ```
 
-After `make up`:
+### URLs
 
-- **Frontend**: http://localhost:3000
-- **API**: http://localhost:8000/api/v1
-- **Health**: http://localhost:8000/api/v1/health
-- **Admin login**: `admin@example.com` / `password`
+| Service | URL |
+|---|---|
+| Frontend (public) | http://localhost:3000 |
+| Frontend (admin) | http://localhost:3000/admin |
+| API (public endpoints) | http://localhost:8000/api/v1 |
+| API health check | http://localhost:8000/api/v1/health |
+| Admin login | `admin@example.com` / `password` |
 
-### Development Commands
+### Common commands
 
 | Command | What it does |
 |---|---|
-| `make seed` | Run migrations + seeders (3 categories, 8 products, 10 reviews) |
+| `make up` | Build + start all services (MySQL, Redis, backend, frontend) |
+| `make down` | Stop all services |
+| `make seed` | Run migrations + seeders |
 | `make fresh` | Drop all data, remigrate + seed, flush Redis |
 | `make test` | Run both backend and frontend test suites |
+| `make test-backend` | PHPUnit only (26 tests) |
+| `make test-frontend` | Jest/RTL only (10 tests) |
 | `make lint` | Pint (backend) + ESLint (frontend) |
-| `make typecheck` | PHPStan (backend) + `tsc --noEmit` (frontend) |
+| `make typecheck` | Larastan (backend) + `tsc --noEmit` (frontend) |
 | `make openapi` | Regenerate `backend/api.json` from Scramble |
 | `make types` | Regenerate `frontend/src/types/openapi.ts` from the OpenAPI spec |
 | `make contract` | `openapi` + `types` + `typecheck` — full drift gate |
 
-The `make contract` command is the key CI gate: it regenerates the OpenAPI spec (`backend/api.json`) from the Laravel codebase, regenerates the TypeScript types from that spec, then runs `tsc --noEmit` to verify the frontend still compiles against the latest contract.
+### Troubleshooting
+
+**Port already in use** — Stop conflicting services or edit `infra/docker-compose.yml` ports:
+```bash
+# Check what's using a port
+lsof -i :3000    # frontend
+lsof -i :8000    # backend
+lsof -i :3306    # MySQL
+```
+
+**Fresh start** — Wipe everything and rebuild:
+```bash
+make down
+docker volume rm $(docker volume ls -q --filter label=com.docker.compose.project=product-catalog) 2>/dev/null
+make up
+make seed
+```
+
+**View logs**:
+```bash
+make logs              # all services
+docker compose -f infra/docker-compose.yml logs -f backend    # backend only
+```
 
 ---
 
