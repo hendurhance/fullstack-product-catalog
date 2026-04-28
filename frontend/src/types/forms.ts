@@ -57,3 +57,25 @@ export const productFormSchema = z.object({
 });
 
 export type ProductFormValues = z.infer<typeof productFormSchema>;
+
+export const reviewFormSchema = z.object({
+  reviewer_name: z
+    .string()
+    .min(2, "Your name must be at least 2 characters.")
+    .max(120, "Your name may not exceed 120 characters."),
+  email: z
+    .string()
+    .min(1, "Your email address is required.")
+    .email("Please enter a valid email address."),
+  rating: z
+    .number({ error: "A rating is required." })
+    .int()
+    .min(1, "The rating must be at least 1.")
+    .max(5, "The rating may not exceed 5."),
+  body: z
+    .string()
+    .min(10, "The review must be at least 10 characters.")
+    .max(2000, "The review may not exceed 2000 characters."),
+});
+
+export type ReviewFormValues = z.infer<typeof reviewFormSchema>;

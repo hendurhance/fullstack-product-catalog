@@ -1,14 +1,12 @@
 "use client";
 
-import {
-  useRef,
-  useState,
-  useTransition,
-} from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useRef, useState, useTransition } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import { Button, Input, Label, Textarea } from "@/components/primitives";
-import type { StoreReviewInput } from "@/types";
+import { reviewFormSchema, type ReviewFormValues } from "@/types/forms";
 
 import { submitReviewAction } from "../reviews/actions";
 
@@ -50,50 +48,50 @@ function RatingInput({
 
 export function ReviewForm({ productId }: { productId: string }) {
   const formRef = useRef<HTMLFormElement>(null);
-  const ratingRef = useRef(0);
-  const [rating, setRating] = useState(0);
-  const [touched, setTouched] = useState(false);
   const [isPending, startTransition] = useTransition();
 
-  function handleSubmit(formData: FormData) {
-    if (ratingRef.current === 0) {
-      setTouched(true);
-      return;
-    }
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    reset,
+    formState: { errors },
+  } = useForm<ReviewFormValues>({
+    resolver: zodResolver(reviewFormSchema),
+    defaultValues: {
+      reviewer_name: "",
+      email: "",
+      rating: 0,
+      body: "",
+    },
+  });
 
-    const input: StoreReviewInput = {
-      product_id: productId,
-      reviewer_name: String(formData.get("reviewer_name") ?? ""),
-      email: String(formData.get("email") ?? ""),
-      rating: ratingRef.current,
-      body: String(formData.get("body") ?? ""),
-    };
+  const [rating, setRating] = useState(0);
 
+  useEffect(() => {
+    register("rating", { valueAsNumber: true });
+  }, [register]);
+
+  function onSubmit(values: ReviewFormValues) {
     startTransition(async () => {
-      const result = await submitReviewAction(input);
+      const result = await submitReviewAction({
+        product_id: productId,
+        ...values,
+      });
       if (result.ok) {
         toast.success("Review submitted! It will appear after moderation.");
-        ratingRef.current = 0;
+        reset();
         setRating(0);
-        setTouched(false);
-        formRef.current?.reset();
       } else {
         toast.error(result.error);
       }
     });
   }
 
-  function handleRatingChange(v: number) {
-    ratingRef.current = v;
-    setRating(v);
-  }
-
-  const ratingError = touched && rating === 0;
-
   return (
     <form
       ref={formRef}
-      action={handleSubmit}
+      onSubmit={handleSubmit(onSubmit)}
       className="space-y-4"
     >
       <div className="grid gap-4 sm:grid-cols-2">
@@ -101,30 +99,44 @@ export function ReviewForm({ productId }: { productId: string }) {
           <Label htmlFor="reviewer_name">Name</Label>
           <Input
             id="reviewer_name"
-            name="reviewer_name"
-            required
+            {...register("reviewer_name")}
             placeholder="Your name"
             disabled={isPending}
+            aria-invalid={!!errors.reviewer_name}
           />
+          {errors.reviewer_name && (
+            <p className="text-xs text-(--danger)">
+              {errors.reviewer_name.message}
+            </p>
+          )}
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="email">Email</Label>
           <Input
             id="email"
-            name="email"
             type="email"
-            required
+            {...register("email")}
             placeholder="you@example.com"
             disabled={isPending}
+            aria-invalid={!!errors.email}
           />
+          {errors.email && (
+            <p className="text-xs text-(--danger)">{errors.email.message}</p>
+          )}
         </div>
       </div>
 
       <div className="space-y-1.5">
         <Label>Rating</Label>
-        <RatingInput value={rating} onChange={handleRatingChange} />
-        {ratingError && (
-          <p className="text-xs text-(--danger)">Please select a rating.</p>
+        <RatingInput
+          value={rating}
+          onChange={(v) => {
+            setRating(v);
+            setValue("rating", v, { shouldValidate: true });
+          }}
+        />
+        {errors.rating && (
+          <p className="text-xs text-(--danger)">{errors.rating.message}</p>
         )}
       </div>
 
@@ -132,12 +144,15 @@ export function ReviewForm({ productId }: { productId: string }) {
         <Label htmlFor="body">Review</Label>
         <Textarea
           id="body"
-          name="body"
-          required
+          {...register("body")}
           rows={4}
           placeholder="Share your thoughts…"
           disabled={isPending}
+          aria-invalid={!!errors.body}
         />
+        {errors.body && (
+          <p className="text-xs text-(--danger)">{errors.body.message}</p>
+        )}
       </div>
 
       <Button type="submit" loading={isPending} disabled={isPending}>

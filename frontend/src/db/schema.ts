@@ -1,16 +1,6 @@
 import { boolean, int, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import type { InferSelectModel, InferInsertModel } from "drizzle-orm";
 
-/**
- * Drizzle row schemas — kept in this repo per the brief, even though
- * the frontend never opens a DB connection. Drizzle's `$inferSelect`
- * gives us a row type derived from the column definitions; that row
- * type is reconciled against the OpenAPI-derived `CategoryResource`
- * type at compile time (see `./index.ts`) so the two cannot drift.
- *
- * Mirror the backend migration exactly: any column rename here without
- * a matching migration must fail typecheck via the reconciliation
- * `satisfies` block.
- */
 export const categories = mysqlTable("categories", {
   id: varchar("id", { length: 36 }).primaryKey(),
   name: varchar("name", { length: 120 }).notNull(),
@@ -20,8 +10,6 @@ export const categories = mysqlTable("categories", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
   deletedAt: timestamp("deleted_at"),
 });
-
-export type CategoryRow = typeof categories.$inferSelect;
 
 export const products = mysqlTable("products", {
   id: varchar("id", { length: 36 }).primaryKey(),
@@ -39,8 +27,6 @@ export const products = mysqlTable("products", {
   deletedAt: timestamp("deleted_at"),
 });
 
-export type ProductRow = typeof products.$inferSelect;
-
 export const reviews = mysqlTable("reviews", {
   id: varchar("id", { length: 36 }).primaryKey(),
   productId: varchar("product_id", { length: 36 })
@@ -55,4 +41,9 @@ export const reviews = mysqlTable("reviews", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
-export type ReviewRow = typeof reviews.$inferSelect;
+export type CategoryRow = InferSelectModel<typeof categories>;
+export type CategoryInsert = InferInsertModel<typeof categories>;
+export type ProductRow = InferSelectModel<typeof products>;
+export type ProductInsert = InferInsertModel<typeof products>;
+export type ReviewRow = InferSelectModel<typeof reviews>;
+export type ReviewInsert = InferInsertModel<typeof reviews>;

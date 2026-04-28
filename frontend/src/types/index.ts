@@ -1,5 +1,5 @@
 import type { components } from "./openapi";
-import type { CategoryRow, ProductRow, ReviewRow } from "./schema";
+import type { CategoryRow, ProductRow, ReviewRow } from "@/db/schema";
 
 /**
  * Public, app-facing aliases. Components import from here, never from
