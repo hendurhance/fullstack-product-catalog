@@ -15,13 +15,10 @@ class ReviewSeeder extends Seeder
             return;
         }
 
-        // 7 approved + 3 unapproved = 10 total
-        $products->take(6)->each(function (Product $product) {
-            Review::factory()
-                ->count(random_int(1, 2))
-                ->approved()
-                ->create(['product_id' => $product->id]);
-        });
+        Review::factory()
+            ->count(7)
+            ->approved()
+            ->create(['product_id' => $products->random()->id]);
 
         Review::factory()
             ->count(3)

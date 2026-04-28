@@ -35,23 +35,20 @@ final class ProductController extends Controller implements HasMiddleware
         private readonly ProductService $service,
     ) {}
 
-    /**
-     * Display a listing of the resource.
-     */
-    public function index(IndexProductRequest $request): mixed
+    public function index(IndexProductRequest $request): ResponseAlias
     {
         $products = $this->service->list(
             perPage: (int) $request->validated('per_page', 15),
             categoryId: $request->validated('category_id'),
         );
 
-        return ProductResource::collection($products)
-            ->toResponse($request);
+        return CacheableResponse::apply(
+            ProductResource::collection($products)->toResponse($request),
+            $request,
+            header: CachePolicy::header(self::DOMAIN, 'list'),
+        );
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(StoreProductRequest $request): JsonResponse
     {
         $this->authorize('create', Product::class);
@@ -63,34 +60,24 @@ final class ProductController extends Controller implements HasMiddleware
             ->setStatusCode(ResponseAlias::HTTP_CREATED);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Product $product, Request $request): ResponseAlias
+    public function show(string $product, Request $request): ResponseAlias
     {
-        if (! $product->is_published) {
-            return response()->json([
-                'message' => 'Resource not found.',
-                'code' => 'PRODUCT_NOT_FOUND',
-                'request_id' => $request->attributes->get('request_id'),
-            ], 404);
-        }
+        $model = $this->service->findBySlug($product);
+        abort_if($model === null, 404);
+        abort_unless($model->is_published, 404);
 
         return CacheableResponse::apply(
-            (new ProductResource($product))->toResponse($request),
+            (new ProductResource($model))->toResponse($request),
             $request,
             header: CachePolicy::header(self::DOMAIN, 'detail'),
             etagKey: sprintf(
                 'products:detail:%s:%d',
-                $product->slug,
-                $product->updated_at?->getTimestamp() ?? 0,
+                $model->slug,
+                $model->updated_at?->getTimestamp() ?? 0,
             ),
         );
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(UpdateProductRequest $request, Product $product): ProductResource
     {
         $this->authorize('update', $product);
@@ -100,9 +87,6 @@ final class ProductController extends Controller implements HasMiddleware
         );
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Product $product): ResponseAlias
     {
         $this->authorize('delete', $product);

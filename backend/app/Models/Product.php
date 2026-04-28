@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasSlug;
-use App\Services\ProductService;
 use Database\Factories\ProductFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -36,10 +35,5 @@ class Product extends Model
     public function approvedReviews(): HasMany
     {
         return $this->hasMany(Review::class)->where('is_approved', true);
-    }
-
-    public function resolveRouteBinding($value, $field = null): ?Model
-    {
-        return app(ProductService::class)->findBySlug((string) $value);
     }
 }

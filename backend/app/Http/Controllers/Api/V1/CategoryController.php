@@ -51,16 +51,19 @@ final class CategoryController extends Controller implements HasMiddleware
         );
     }
 
-    public function show(Category $category, Request $request): ResponseAlias
+    public function show(string $category, Request $request): ResponseAlias
     {
+        $model = $this->service->findBySlug($category);
+        abort_if($model === null, 404);
+
         return CacheableResponse::apply(
-            (new CategoryResource($category))->toResponse($request),
+            (new CategoryResource($model))->toResponse($request),
             $request,
             header: CachePolicy::header(self::DOMAIN, 'detail'),
             etagKey: sprintf(
                 'categories:detail:%s:%d',
-                $category->slug,
-                $category->updated_at?->getTimestamp() ?? 0,
+                $model->slug,
+                $model->updated_at?->getTimestamp() ?? 0,
             ),
         );
     }

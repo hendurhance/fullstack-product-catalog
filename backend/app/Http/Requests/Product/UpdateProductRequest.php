@@ -27,7 +27,7 @@ final class UpdateProductRequest extends FormRequest
             'description' => ['sometimes', 'nullable', 'string', 'max:2000'],
             'price' => ['sometimes', 'required', 'integer', 'min:0'],
             'stock_qty' => ['sometimes', 'required', 'integer', 'min:0'],
-            'is_published' => ['boolean'],
+            'is_published' => ['sometimes', 'boolean'],
         ];
     }
 

@@ -32,9 +32,9 @@ const nextConfig: NextConfig = {
       expire: 300,
     },
     productDetail: {
-      stale: 120,
-      revalidate: 120,
-      expire: 600,
+      stale: 60,
+      revalidate: 60,
+      expire: 300,
     },
     reviewList: {
       stale: 60,

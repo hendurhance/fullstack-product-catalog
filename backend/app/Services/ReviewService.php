@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Models\Product;
 use App\Models\Review;
 use App\Repositories\ReviewRepository;
 use App\Support\Cache\CachePolicy;
@@ -49,11 +48,26 @@ final class ReviewService
      */
     public function create(array $attrs): Review
     {
+        $attrs['is_approved'] = false;
+
         return DB::transaction(function () use ($attrs): Review {
             $review = $this->repository->create($attrs);
             $this->invalidate($review->product_id);
 
             return $review;
+        });
+    }
+
+    /**
+     * @param  array<string, mixed>  $attrs
+     */
+    public function update(Review $review, array $attrs): Review
+    {
+        return DB::transaction(function () use ($review, $attrs): Review {
+            $updated = $this->repository->update($review, $attrs);
+            $this->invalidate($updated->product_id);
+
+            return $updated;
         });
     }
 

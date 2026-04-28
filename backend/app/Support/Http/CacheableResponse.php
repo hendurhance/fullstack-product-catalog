@@ -21,12 +21,14 @@ final class CacheableResponse
         Response $response,
         Request $request,
         string $header,
-        string $etagKey,
+        string $etagKey = '',
     ): Response {
         $response->headers->set('Cache-Control', $header);
-        $response->setEtag(sha1($etagKey));
 
-        $response->isNotModified($request);
+        if ($etagKey !== '') {
+            $response->setEtag(sha1($etagKey));
+            $response->isNotModified($request);
+        }
 
         return $response;
     }

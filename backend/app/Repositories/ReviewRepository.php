@@ -15,7 +15,6 @@ final class ReviewRepository
     public function list(int $perPage = 15): CursorPaginator
     {
         return Review::query()
-            ->with('product')
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->cursorPaginate(perPage: $perPage);
@@ -50,6 +49,16 @@ final class ReviewRepository
     public function approve(Review $review): Review
     {
         $review->update(['is_approved' => true]);
+
+        return $review->refresh();
+    }
+
+    /**
+     * @param  array<string, mixed>  $attrs
+     */
+    public function update(Review $review, array $attrs): Review
+    {
+        $review->update($attrs);
 
         return $review->refresh();
     }

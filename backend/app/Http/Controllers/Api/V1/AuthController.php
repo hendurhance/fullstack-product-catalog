@@ -6,38 +6,29 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
-use App\Models\User;
+use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
 
 final class AuthController extends Controller
 {
-    private const array TOKEN_ABILITIES = [
-        'categories:write',
-        'products:write',
-        'reviews:moderate',
-    ];
+    public function __construct(
+        private readonly AuthService $auth,
+    ) {}
 
     public function login(LoginRequest $request): JsonResponse
     {
-        $user = User::where('email', $request->string('email'))->first();
-
-        if ($user === null || ! Hash::check($request->string('password'), $user->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
-            ]);
-        }
-
-        $token = $user->createToken('admin', self::TOKEN_ABILITIES);
+        $result = $this->auth->login(
+            $request->string('email'),
+            $request->string('password'),
+        );
 
         return response()->json([
             'data' => [
-                'token' => $token->plainTextToken,
+                'token' => $result['token'],
                 'user' => [
-                    'name' => $user->name,
-                    'email' => $user->email,
+                    'name' => $result['user']->name,
+                    'email' => $result['user']->email,
                 ],
             ],
         ]);
@@ -59,7 +50,7 @@ final class AuthController extends Controller
 
     public function logout(Request $request): JsonResponse
     {
-        $request->user()->currentAccessToken()->delete();
+        $this->auth->logout($request->user());
 
         return response()->json([
             'message' => 'Logged out successfully.',

@@ -10,6 +10,8 @@ use App\Http\Requests\Review\UpdateReviewRequest;
 use App\Http\Resources\ReviewResource;
 use App\Models\Review;
 use App\Services\ReviewService;
+use App\Support\Cache\CachePolicy;
+use App\Support\Http\CacheableResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
@@ -18,6 +20,8 @@ use Symfony\Component\HttpFoundation\Response as ResponseAlias;
 
 final class ReviewController extends Controller implements HasMiddleware
 {
+    private const string DOMAIN = 'reviews';
+
     public static function middleware(): array
     {
         return [
@@ -37,21 +41,30 @@ final class ReviewController extends Controller implements HasMiddleware
             perPage: (int) $request->query('per_page', 15),
         );
 
-        return ReviewResource::collection($reviews)
-            ->toResponse($request);
+        return CacheableResponse::apply(
+            ReviewResource::collection($reviews)->toResponse($request),
+            $request,
+            header: CachePolicy::header(self::DOMAIN, 'list'),
+        );
     }
 
-    public function show(Review $review): ReviewResource
+    public function show(Review $review, Request $request): ResponseAlias
     {
-        return new ReviewResource($review);
+        return CacheableResponse::apply(
+            (new ReviewResource($review))->toResponse($request),
+            $request,
+            header: CachePolicy::header(self::DOMAIN, 'list'),
+            etagKey: sprintf(
+                'reviews:detail:%s:%d',
+                $review->id,
+                $review->updated_at?->getTimestamp() ?? 0,
+            ),
+        );
     }
 
     public function store(StoreReviewRequest $request): JsonResponse
     {
-        $attrs = $request->validated();
-        $attrs['is_approved'] = false;
-
-        $review = $this->service->create($attrs);
+        $review = $this->service->create($request->validated());
 
         return ReviewResource::make($review)
             ->response()
@@ -63,7 +76,7 @@ final class ReviewController extends Controller implements HasMiddleware
         $this->authorize('update', $review);
 
         return new ReviewResource(
-            $this->service->find($review->id),
+            $this->service->update($review, $request->validated()),
         );
     }
 

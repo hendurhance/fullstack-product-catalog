@@ -17,6 +17,8 @@ final class ProductRepository
         return Product::query()
             ->where('is_published', true)
             ->when($categoryId, fn ($q) => $q->where('category_id', $categoryId))
+            ->withAvg('approvedReviews', 'rating')
+            ->withCount('approvedReviews')
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->cursorPaginate(perPage: $perPage);
@@ -24,7 +26,11 @@ final class ProductRepository
 
     public function findBySlug(string $slug): ?Product
     {
-        return Product::query()->where('slug', $slug)->first();
+        return Product::query()
+            ->where('slug', $slug)
+            ->withAvg('approvedReviews', 'rating')
+            ->withCount('approvedReviews')
+            ->first();
     }
 
     /**
