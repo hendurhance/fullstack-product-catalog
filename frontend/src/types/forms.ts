@@ -66,6 +66,7 @@ export const reviewFormSchema = z.object({
   email: z
     .string()
     .min(1, "Your email address is required.")
+    .max(255, "Your email may not exceed 255 characters.")
     .email("Please enter a valid email address."),
   rating: z
     .number({ error: "A rating is required." })
