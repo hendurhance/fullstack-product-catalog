@@ -1,4 +1,4 @@
-import type { ActionError } from "@/lib/actions";
+import type { ActionError } from "@/lib/action-types";
 
 export function Th({
   children,

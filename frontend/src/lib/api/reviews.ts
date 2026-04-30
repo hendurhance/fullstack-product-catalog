@@ -29,11 +29,14 @@ export async function listReviews(opts: FetchOpts = {}): Promise<ReviewListRespo
 
 export async function listReviewsByProduct(
   productId: string,
-  opts: FetchOpts = {},
+  opts: FetchOpts & { cursor?: string } = {},
 ): Promise<ReviewListResponse> {
-  return apiFetch<ReviewListResponse>(`/reviews?per_page=100&product_id=${productId}`, {
+  const { cursor, ...fetchOpts } = opts;
+  const params = new URLSearchParams({ product_id: productId });
+  if (cursor) params.set("cursor", cursor);
+  return apiFetch<ReviewListResponse>(`/reviews?${params}`, {
     next: { tags: [REVIEW_TAGS.list, REVIEW_TAGS.product(productId)] },
-    ...opts,
+    ...fetchOpts,
   });
 }
 

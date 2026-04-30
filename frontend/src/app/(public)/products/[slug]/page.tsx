@@ -21,8 +21,18 @@ export async function generateStaticParams() {
   cacheLife("productList");
   cacheTag(PRODUCT_TAGS.list);
 
-  const { data: products } = await listProducts();
-  return products.map((p) => ({ slug: p.slug }));
+  const slugs: string[] = [];
+  let cursor: string | undefined;
+
+  do {
+    const res = await listProducts(cursor ? { cache: "no-store", cursor } : undefined);
+    for (const p of res.data) {
+      slugs.push(p.slug);
+    }
+    cursor = res.meta.next_cursor ?? undefined;
+  } while (cursor);
+
+  return slugs.map((slug) => ({ slug }));
 }
 
 async function loadProduct(slug: string): Promise<Product | null> {

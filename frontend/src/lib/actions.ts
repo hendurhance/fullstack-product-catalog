@@ -4,17 +4,7 @@ import { redirect } from "next/navigation";
 
 import { ApiError } from "@/lib/api/client";
 import { clearAdminToken } from "@/lib/auth/cookies";
-
-export type ActionResult<T> =
-  | { ok: true; data: T }
-  | { ok: false; error: ActionError };
-
-export type ActionError = {
-  message: string;
-  status: number;
-  code: string;
-  fields?: Record<string, string[]>;
-};
+import type { ActionError } from "./action-types";
 
 export async function handleActionError(error: unknown): Promise<ActionError> {
   if (error instanceof ApiError) {

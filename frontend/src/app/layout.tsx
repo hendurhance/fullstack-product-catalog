@@ -23,8 +23,6 @@ export const metadata: Metadata = {
     "Acme is a small product catalog with a typed contract from Laravel through Next.js.",
 };
 
-const themeScript = `try{document.documentElement.classList.toggle("dark",localStorage.getItem("acme-theme")==="dark")}catch{}`;
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -36,12 +34,8 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <head>
-        <Script id="theme-init" strategy="beforeInteractive">
-          {themeScript}
-        </Script>
-      </head>
       <body className="min-h-full flex flex-col bg-(--paper) text-(--ink)">
+        <Script id="theme-init" strategy="beforeInteractive">{`try{document.documentElement.classList.toggle("dark",localStorage.getItem("acme-theme")==="dark")}catch{}`}</Script>
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
