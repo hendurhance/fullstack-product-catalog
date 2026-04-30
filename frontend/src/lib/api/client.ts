@@ -88,8 +88,7 @@ export async function apiFetch<TResponse>(
 
   if (!response.ok) {
     if (response.status === 401 && typeof window !== "undefined") {
-      document.cookie = "admin_token=; Path=/; Max-Age=0";
-      window.location.href = "/admin/login";
+      window.location.href = "/admin/logout";
     }
 
     const payload = (json ?? { message: "Request failed", code: "UNKNOWN" }) as ApiErrorPayload;

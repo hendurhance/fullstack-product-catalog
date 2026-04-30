@@ -22,10 +22,12 @@ type ProductListResponse = {
 
 type ProductEnvelope = { data: Product };
 
-export async function listProducts(opts: FetchOpts = {}): Promise<ProductListResponse> {
-  return apiFetch<ProductListResponse>("/products", {
+export async function listProducts(opts: FetchOpts & { cursor?: string } = {}): Promise<ProductListResponse> {
+  const { cursor, ...fetchOpts } = opts;
+  const qs = cursor ? `?cursor=${cursor}` : "";
+  return apiFetch<ProductListResponse>(`/products${qs}`, {
     next: { tags: [PRODUCT_TAGS.list] },
-    ...opts,
+    ...fetchOpts,
   });
 }
 

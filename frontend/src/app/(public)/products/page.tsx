@@ -56,6 +56,7 @@ async function ProductGrid({ categoryId }: { categoryId?: string }) {
 
   return (
     <ProductListClient
+      key={categoryId ?? "all"}
       initialProducts={res.data}
       initialNextCursor={res.meta.next_cursor}
       categoryId={categoryId}
@@ -81,44 +82,19 @@ function ProductSkeleton() {
   );
 }
 
-async function CategoryResolver({ categorySlug }: { categorySlug?: string }) {
-  if (!categorySlug) {
-    return (
-      <Suspense fallback={<ProductSkeleton />}>
-        <ProductGrid />
-      </Suspense>
-    );
-  }
-
-  const categories = await listCategories();
-  const cat = categories.find((c) => c.slug === categorySlug);
-
-  return (
-    <Suspense fallback={<ProductSkeleton />}>
-      <ProductGrid categoryId={cat?.id} />
-    </Suspense>
-  );
-}
-
-export default async function ProductsPage({
+async function ProductsContent({
   searchParams,
 }: {
   searchParams: Promise<{ category?: string }>;
 }) {
   const { category } = await searchParams;
 
-  return (
-    <main className="acme-grain mx-auto w-full max-w-5xl px-6 py-20">
-      <header className="mb-10">
-        <p className="acme-eyebrow mb-3">The Acme Index</p>
-        <h1 className="acme-display text-[56px] tracking-[-0.03em] text-(--ink) sm:text-[64px]">
-          Products
-        </h1>
-        <p className="mt-3 max-w-prose text-[15px] text-(--ink-muted)">
-          Browse the full catalog. Filter by category to narrow your search.
-        </p>
-      </header>
+  const categoryId = category
+    ? (await listCategories()).find((c) => c.slug === category)?.id
+    : undefined;
 
+  return (
+    <>
       <div className="mb-8">
         <Suspense
           fallback={
@@ -133,7 +109,33 @@ export default async function ProductsPage({
         </Suspense>
       </div>
 
-      <CategoryResolver categorySlug={category} />
+      <Suspense fallback={<ProductSkeleton />}>
+        <ProductGrid categoryId={categoryId} />
+      </Suspense>
+    </>
+  );
+}
+
+export default async function ProductsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string }>;
+}) {
+  return (
+    <main className="acme-grain mx-auto w-full max-w-5xl px-6 py-20">
+      <header className="mb-10">
+        <p className="acme-eyebrow mb-3">The Acme Index</p>
+        <h1 className="acme-display text-[56px] tracking-[-0.03em] text-(--ink) sm:text-[64px]">
+          Products
+        </h1>
+        <p className="mt-3 max-w-prose text-[15px] text-(--ink-muted)">
+          Browse the full catalog. Filter by category to narrow your search.
+        </p>
+      </header>
+
+      <Suspense fallback={<ProductSkeleton />}>
+        <ProductsContent searchParams={searchParams} />
+      </Suspense>
 
       <footer className="mt-16 flex items-baseline justify-between border-t border-(--rule) pt-6 text-xs text-(--ink-faint)">
         <span className="acme-mono">/v1/products</span>

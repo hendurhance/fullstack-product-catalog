@@ -1,6 +1,6 @@
 # Full-Stack Product Catalog & Review Platform
 
-A full-stack product catalog with a Laravel 13 API backend, Next.js 16 frontend, MySQL 8.4, and Redis — featuring three-layer cache coherence, typed API contracts, and an admin CRUD dashboard.
+A full-stack product catalog with a Laravel 13 API backend, Next.js 16 frontend, PostgreSQL 16, and Redis — featuring three-layer cache coherence, typed API contracts, and an admin CRUD dashboard.
 
 ---
 
@@ -20,13 +20,13 @@ No environment variable configuration needed — sensible defaults are baked int
 git clone https://github.com/hendurhance/fullstack-product-catalog.git && cd fullstack-product-catalog
 
 # 2. Build and start the full stack
-#    This pulls MySQL 8.4, Redis 7, builds the Laravel backend
+#    This pulls PostgreSQL 16, Redis 7, builds the Laravel backend
 #    and Next.js frontend, then starts all four services.
 #    First run takes ~2 min for image builds + composer/npm install.
 make up
 
 # 3. Wait for services to be healthy (~10-15s)
-#    MySQL and Redis have health checks; backend waits for both.
+#    PostgreSQL and Redis have health checks; backend waits for both.
 docker compose -f infra/docker-compose.yml ps    # all should show "healthy" or "running"
 
 # 4. Run database migrations + seed demo data
@@ -53,7 +53,7 @@ curl http://localhost:8000/api/v1/health
 
 | Command | What it does |
 |---|---|
-| `make up` | Build + start all services (MySQL, Redis, backend, frontend) |
+| `make up` | Build + start all services (PostgreSQL, Redis, backend, frontend) |
 | `make down` | Stop all services |
 | `make seed` | Run migrations + seeders |
 | `make fresh` | Drop all data, remigrate + seed, flush Redis |
@@ -73,7 +73,7 @@ curl http://localhost:8000/api/v1/health
 # Check what's using a port
 lsof -i :3000    # frontend
 lsof -i :8000    # backend
-lsof -i :3306    # MySQL
+lsof -i :5432    # PostgreSQL
 ```
 
 **Fresh start** — Wipe everything and rebuild:
@@ -108,7 +108,7 @@ docker compose -f infra/docker-compose.yml logs -f backend    # backend only
                                               │
                                  Repository ── Eloquent
                                               │
-                                        [MySQL 8.4]
+                                         [PostgreSQL 16]
 
 Mutation flow:  Service.write() ─▶ DB tx
                                 ─▶ Cache::tags([...])->flush()
@@ -123,7 +123,7 @@ Three caches kept coherent by **tag-based invalidation + an HMAC-signed revalida
 
 | Layer | Choice | Why |
 |---|---|---|
-| Database | MySQL 8.4 | Spec bonus requirement |
+| Database | PostgreSQL 16 | Spec architecture requirement |
 | Cache | Redis 7 | Required for Laravel cache tags — file/database cache cannot do tag-based flush |
 | Backend | Laravel 13, PHP 8.4 | Sanctum token auth, Eloquent, Scramble OpenAPI |
 | Frontend | Next.js 16, React 19 | App Router, Server Components, `'use cache'` with `cacheLife`/`cacheTag` |
@@ -261,7 +261,7 @@ frontend/
   next.config.ts               # cacheLife profiles mirroring backend TTLs
 
 infra/
-  docker-compose.yml           # MySQL 8.4 + Redis 7 + backend + frontend
+  docker-compose.yml           # PostgreSQL 16 + Redis 7 + backend + frontend
   backend.Dockerfile
   frontend.Dockerfile
 ```
@@ -320,7 +320,7 @@ make test-backend
 - **ReviewCacheInvalidationTest** (7 tests): fresh data after create/approve/reject/delete, webhook verification
 - **ReviewTest** (7 tests): CRUD, validation, auth gating, webhook
 
-Tests run against MySQL `product_catalog_testing` database — same engine as production, no SQLite discrepancies.
+Tests run against PostgreSQL `product_catalog_testing` database — same engine as production, no SQLite discrepancies.
 
 ### Frontend (10 tests, Jest + RTL)
 ```
