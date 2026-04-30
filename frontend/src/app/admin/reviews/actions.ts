@@ -11,9 +11,8 @@ import {
 } from "@/lib/api/reviews";
 import { requireAdminToken } from "@/lib/auth/cookies";
 import type { Review } from "@/types";
-import { handleActionError, type ActionResult, type ActionError } from "@/lib/actions";
-
-export type { ActionError };
+import { handleActionError } from "@/lib/actions";
+import type { ActionResult } from "@/lib/action-types";
 
 export async function listReviewsAction(): Promise<
   ActionResult<Review[]>
